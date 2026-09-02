@@ -87,16 +87,16 @@ function App() {
             </div>
 
             <div className="lg:col-span-6 relative">
-              <div className="relative rounded-3xl overflow-hidden aspect-[4/5] sm:aspect-video lg:aspect-[4/5] xl:aspect-square neon-border bg-slate-200 dark:bg-cyber-gray transition-colors">
+              <div className="group relative rounded-3xl overflow-hidden aspect-[4/5] sm:aspect-video lg:aspect-[4/5] xl:aspect-square neon-border bg-slate-200 dark:bg-cyber-gray transition-colors">
                 {/* Hero Image */}
                 <img 
                   src="/hero-image.jpg" 
                   alt="Robert Rich Garcia" 
-                  className="absolute inset-0 w-full h-full object-cover object-center opacity-100 dark:opacity-80 mix-blend-normal dark:mix-blend-luminosity dark:hover:mix-blend-normal transition-all duration-500"
+                  className="absolute inset-0 w-full h-full object-cover object-center opacity-100 dark:opacity-60 dark:grayscale dark:group-hover:grayscale-0 dark:group-hover:opacity-100 transition-all duration-700 ease-in-out transform group-hover:scale-105"
                 />
                 
                 {/* Overlay gradient */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/20 dark:from-cyber-dark via-transparent to-transparent opacity-80"></div>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/20 dark:from-cyber-dark via-transparent to-transparent opacity-80 pointer-events-none transition-opacity duration-700 group-hover:opacity-40"></div>
               </div>
               
               {/* Floating Badge */}
