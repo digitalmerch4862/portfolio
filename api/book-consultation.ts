@@ -2,6 +2,9 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
 import { Resend } from 'resend';
 
+const DEFAULT_SUPABASE_URL = "https://jfdvbyoyvqriqhqtmyjo.supabase.co";
+const DEFAULT_SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpmZHZieW95dnFyaXFocXRteWpvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAwOTMxOTQsImV4cCI6MjA4NTY2OTE5NH0.t5-BcJx0BYAQcBBIclqTsXvoUAWUzA-rPCtEnWSiuuM";
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Only accept POST
   if (req.method !== 'POST') {
@@ -32,12 +35,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     let bookingId = `BK-${Date.now().toString(36).toUpperCase()}`;
 
     // 1. Supabase Insertion
-    const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
+    const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || DEFAULT_SUPABASE_URL;
     const supabaseKey =
       process.env.SUPABASE_SERVICE_ROLE_KEY ||
       process.env.SUPABASE_SECRET_KEY ||
       process.env.SUPABASE_ANON_KEY ||
-      process.env.VITE_SUPABASE_ANON_KEY;
+      process.env.VITE_SUPABASE_ANON_KEY ||
+      DEFAULT_SUPABASE_KEY;
 
     if (supabaseUrl && supabaseKey) {
       const supabase = createClient(supabaseUrl, supabaseKey, {
