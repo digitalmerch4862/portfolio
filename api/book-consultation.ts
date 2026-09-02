@@ -2,6 +2,69 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
 import { Resend } from 'resend';
 
+// HighLevel CRM Configuration & Helper
+const HIGHLEVEL_API_BASE_URL = 'https://services.leadconnectorhq.com';
+const HIGHLEVEL_API_VERSION = '2021-07-28';
+
+async function syncToHighLevel(lead: {
+  name: string;
+  email: string;
+  phone?: string;
+  company?: string;
+  service_type: string;
+  bottleneck?: string;
+  preferred_date?: string;
+  preferred_time_slot?: string;
+}) {
+  const locationId = process.env.HIGHLEVEL_LOCATION_ID?.trim();
+  const privateIntegrationToken = process.env.HIGHLEVEL_PRIVATE_INTEGRATION_TOKEN?.trim();
+  const apiBaseUrl = (process.env.HIGHLEVEL_API_BASE_URL?.trim() || HIGHLEVEL_API_BASE_URL).replace(/\/+$/, '');
+
+  if (!locationId || !privateIntegrationToken) {
+    return { skipped: true, reason: 'HighLevel credentials not configured' };
+  }
+
+  const [firstName, ...rest] = lead.name.trim().split(' ');
+  const lastName = rest.join(' ');
+
+  try {
+    const response = await fetch(`${apiBaseUrl}/contacts/upsert`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${privateIntegrationToken}`,
+        Version: HIGHLEVEL_API_VERSION,
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        locationId,
+        email: lead.email.toLowerCase().trim(),
+        firstName,
+        lastName: lastName || undefined,
+        phone: lead.phone ? lead.phone.trim() : undefined,
+        companyName: lead.company ? lead.company.trim() : undefined,
+        source: 'Robert Garcia Portfolio',
+        tags: [
+          'Portfolio Lead',
+          'Consultation Booking',
+          lead.service_type.replace(/[^a-zA-Z0-9]/g, '-'),
+        ],
+        customFields: [
+          { key: 'business_problem', field_value: lead.bottleneck || 'N/A' },
+          { key: 'preferred_consultation_date', field_value: lead.preferred_date || 'Flexible' },
+          { key: 'preferred_time_window', field_value: lead.preferred_time_slot || 'Anytime' },
+        ],
+      }),
+    });
+
+    const data = await response.json();
+    return { ok: response.ok, data };
+  } catch (err: any) {
+    console.warn('HighLevel sync warning:', err.message);
+    return { ok: false, error: err.message };
+  }
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Only accept POST
   if (req.method !== 'POST') {
@@ -71,7 +134,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
     }
 
-    // 2. Resend Automated Emails
+    // 2. HighLevel / LeadConnector CRM Sync
+    const highLevelPromise = syncToHighLevel({
+      name,
+      email,
+      phone,
+      company,
+      service_type,
+      bottleneck,
+      preferred_date,
+      preferred_time_slot,
+    });
+
+    // 3. Resend Automated Emails
     const resendApiKey = process.env.RESEND_API_KEY;
     const fromEmail = process.env.RESEND_FROM_EMAIL || 'Robert Rich Garcia <consultations@dmerch.store>';
     const adminEmail = process.env.ADMIN_NOTIFICATION_EMAIL || 'garciarobertrich@gmail.com';
@@ -164,6 +239,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         console.warn('Resend email notification warning:', emailErr);
       }
     }
+
+    // Wait for HighLevel sync (if any)
+    await highLevelPromise;
 
     return res.status(200).json({
       success: true,
