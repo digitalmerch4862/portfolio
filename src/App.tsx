@@ -1,7 +1,28 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowRight, BarChart3, Settings, TrendingUp, CheckCircle, ExternalLink, Mail, MapPin, Moon, Sun, Layers, Workflow, MessageSquare, PhoneCall, CalendarCheck } from 'lucide-react';
+import { 
+  ArrowRight, 
+  BarChart3, 
+  Settings, 
+  TrendingUp, 
+  CheckCircle, 
+  ExternalLink, 
+  Mail, 
+  MapPin, 
+  Moon, 
+  Sun, 
+  Layers, 
+  Workflow, 
+  MessageSquare, 
+  PhoneCall, 
+  CalendarCheck,
+  Star,
+  Quote,
+  Sparkles
+} from 'lucide-react';
 import { BookingModal } from './components/BookingModal';
-import { AdminDashboard } from './components/AdminDashboard';
+import { AdminDashboard, TestimonialRecord } from './components/AdminDashboard';
+import { ReviewPage } from './components/ReviewPage';
+import { supabase } from './lib/supabase';
 
 const WhatsAppIcon = ({ size = 20, className = "" }: { size?: number; className?: string }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
@@ -16,16 +37,20 @@ const ViberIcon = ({ size = 20, className = "" }: { size?: number; className?: s
 );
 
 function App() {
-  const [isAdminRoute, setIsAdminRoute] = useState(
-    window.location.pathname.startsWith('/admin')
-  );
+  const currentPath = window.location.pathname;
+  const [isAdminRoute, setIsAdminRoute] = useState(currentPath.startsWith('/admin'));
+  const [isReviewRoute, setIsReviewRoute] = useState(currentPath.startsWith('/review'));
+  
   const [isDark, setIsDark] = useState(true);
   const [isBookingOpen, setIsBookingOpen] = useState(false);
   const [selectedService, setSelectedService] = useState('Custom Business Management System');
+  const [featuredTestimonials, setFeaturedTestimonials] = useState<TestimonialRecord[]>([]);
 
   useEffect(() => {
     const handleLocationCheck = () => {
-      setIsAdminRoute(window.location.pathname.startsWith('/admin'));
+      const path = window.location.pathname;
+      setIsAdminRoute(path.startsWith('/admin'));
+      setIsReviewRoute(path.startsWith('/review'));
     };
 
     window.addEventListener('popstate', handleLocationCheck);
@@ -40,8 +65,33 @@ function App() {
     }
   }, [isDark]);
 
+  // Fetch Featured Testimonials
+  useEffect(() => {
+    const fetchFeatured = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('client_testimonials')
+          .select('*')
+          .eq('is_featured', true)
+          .eq('status', 'approved')
+          .order('created_at', { ascending: false });
+
+        if (!error && data) {
+          setFeaturedTestimonials(data);
+        }
+      } catch (err) {
+        console.warn('Testimonial query notice:', err);
+      }
+    };
+    fetchFeatured();
+  }, []);
+
   if (isAdminRoute) {
     return <AdminDashboard />;
+  }
+
+  if (isReviewRoute) {
+    return <ReviewPage />;
   }
 
   const toggleTheme = () => setIsDark(!isDark);
@@ -118,13 +168,14 @@ function App() {
             </div>
             <div className="hidden md:flex items-center space-x-8">
               <a href="#services" className="text-slate-600 dark:text-gray-300 hover:text-brand-600 dark:hover:text-cyber-blue font-medium transition-colors">Solutions</a>
+              <a href="#testimonials" className="text-slate-600 dark:text-gray-300 hover:text-brand-600 dark:hover:text-cyber-blue font-medium transition-colors">Client Impact</a>
               <a href="#about" className="text-slate-600 dark:text-gray-300 hover:text-brand-600 dark:hover:text-cyber-blue font-medium transition-colors">About</a>
               <a href="#skills" className="text-slate-600 dark:text-gray-300 hover:text-brand-600 dark:hover:text-cyber-blue font-medium transition-colors">Skills</a>
               <a href="#resume" className="text-slate-600 dark:text-gray-300 hover:text-brand-600 dark:hover:text-cyber-blue font-medium transition-colors">Background</a>
               
               <button 
                 onClick={toggleTheme} 
-                className="p-2 rounded-full bg-slate-100 dark:bg-cyber-gray text-slate-600 dark:text-cyber-blue hover:bg-slate-200 dark:hover:bg-cyber-blue/20 transition-all dark:neon-border"
+                className="p-2 rounded-full bg-slate-100 dark:bg-cyber-gray text-slate-600 dark:text-cyber-blue hover:bg-slate-200 dark:hover:bg-cyber-blue/20 transition-all dark:neon-border cursor-pointer"
                 aria-label="Toggle dark mode"
               >
                 {isDark ? <Sun size={20} /> : <Moon size={20} />}
@@ -178,18 +229,14 @@ function App() {
 
             <div className="lg:col-span-6 relative">
               <div className="group relative rounded-3xl overflow-hidden aspect-[4/5] sm:aspect-video lg:aspect-[4/5] xl:aspect-square neon-border bg-slate-200 dark:bg-cyber-gray transition-colors cursor-pointer">
-                {/* Hero Image */}
                 <img 
                   src="/hero-image.jpg" 
                   alt="Robert Rich Garcia" 
                   className="absolute inset-0 w-full h-full object-cover object-center opacity-100 dark:opacity-60 dark:grayscale dark:group-hover:grayscale-0 dark:group-hover:opacity-100 transition-all duration-700 ease-in-out transform group-hover:scale-105"
                 />
-                
-                {/* Overlay gradient */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/20 dark:from-cyber-dark via-transparent to-transparent opacity-80 pointer-events-none transition-opacity duration-700 group-hover:opacity-30"></div>
               </div>
               
-              {/* Floating Badge */}
               <div className="absolute -bottom-6 -left-6 sm:bottom-12 sm:-left-12 bg-white dark:bg-cyber-gray p-6 rounded-2xl max-w-xs border border-slate-100 dark:border-cyber-blue/30 hidden sm:block animate-bounce shadow-xl dark:shadow-[0_0_20px_rgba(0,242,255,0.15)] transition-colors">
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 bg-brand-100 dark:bg-cyber-blue/10 text-brand-600 dark:text-cyber-blue rounded-full flex items-center justify-center flex-shrink-0 neon-border transition-colors">
@@ -254,23 +301,98 @@ function App() {
               </div>
             ))}
           </div>
+        </div>
+      </section>
 
-          {/* Agency Banner */}
-          <div className="mt-16 bg-brand-900 dark:bg-cyber-gray rounded-3xl p-8 sm:p-12 text-center text-white relative overflow-hidden dark:neon-border transition-colors duration-300">
-            <div className="absolute top-0 right-0 -mr-20 -mt-20 w-64 h-64 bg-brand-800 dark:bg-cyber-blue rounded-full blur-[100px] opacity-50 dark:opacity-20 transition-opacity"></div>
-            <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-64 h-64 bg-teal-500 dark:bg-cyber-blue rounded-full blur-[100px] opacity-20 dark:opacity-10 transition-opacity"></div>
-            
-            <div className="relative z-10">
-              <h3 className="text-2xl sm:text-3xl font-bold mb-4">Looking for full-scale agency deployment?</h3>
-              <p className="text-brand-100 dark:text-gray-300 mb-8 max-w-2xl mx-auto text-lg transition-colors">
-                Through my agency, <strong className="text-white dark:text-cyber-blue transition-colors">DigitalMerch</strong>, we engineer tailored business automation, custom software, and digital infrastructure to scale your operations.
-              </p>
-              <a href="https://my.dmerch.store/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 bg-white dark:bg-cyber-blue text-brand-900 dark:text-cyber-dark px-8 py-4 rounded-full font-bold hover:bg-brand-50 dark:hover:bg-white transition-all hover:scale-105 shadow-xl dark:shadow-[0_0_20px_rgba(0,242,255,0.3)]">
-                Explore DigitalMerch Services
-                <ExternalLink size={20} />
-              </a>
+      {/* Testimonials / Client Impact Section */}
+      <section id="testimonials" className="py-24 relative z-10 bg-slate-100/40 dark:bg-cyber-dark/40 border-b border-slate-100 dark:border-cyber-gray">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-mono mb-3">
+              <Star size={12} className="fill-amber-400" />
+              <span>Real Client Impact & Reviews</span>
             </div>
+            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white mb-4 tracking-tight">
+              What Business Owners Say
+            </h2>
+            <p className="text-slate-600 dark:text-gray-400 text-base sm:text-lg">
+              Practical software and automation solutions that solve actual bottlenecks and deliver measurable results.
+            </p>
           </div>
+
+          {featuredTestimonials.length > 0 ? (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {featuredTestimonials.map((review) => (
+                <div 
+                  key={review.id}
+                  className="bg-white dark:bg-[#0d0d0d] border border-slate-200 dark:border-cyber-gray p-6 sm:p-8 rounded-3xl shadow-sm hover:shadow-xl dark:hover:border-cyber-blue/50 dark:hover:shadow-[0_0_25px_rgba(0,242,255,0.15)] transition-all flex flex-col justify-between"
+                >
+                  <div>
+                    {/* Stars */}
+                    <div className="flex items-center gap-1 mb-4">
+                      {[1, 2, 3, 4, 5].map((s) => (
+                        <Star
+                          key={s}
+                          size={16}
+                          className={s <= review.rating ? "text-amber-400 fill-amber-400" : "text-gray-300 dark:text-gray-700"}
+                        />
+                      ))}
+                    </div>
+
+                    {/* Quote */}
+                    <p className="text-slate-700 dark:text-gray-200 text-sm leading-relaxed mb-6 italic">
+                      "{review.testimonial_text}"
+                    </p>
+
+                    {/* Measurable impact tag */}
+                    {review.measurable_result && (
+                      <div className="mb-6 p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/50 text-emerald-700 dark:text-emerald-400 text-xs font-medium">
+                        <span className="font-bold block text-[10px] uppercase tracking-wider mb-0.5">Impact:</span>
+                        {review.measurable_result}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Author Footer */}
+                  <div className="pt-4 border-t border-slate-100 dark:border-cyber-gray/60 flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-brand-100 dark:bg-cyber-blue/10 border border-brand-200 dark:border-cyber-blue/30 text-brand-600 dark:text-cyber-blue flex items-center justify-center font-bold text-sm flex-shrink-0">
+                      {review.avatar_url ? (
+                        <img src={review.avatar_url} alt={review.client_name} className="w-full h-full rounded-full object-cover" />
+                      ) : (
+                        review.client_name.charAt(0)
+                      )}
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-slate-900 dark:text-white text-sm">{review.client_name}</h4>
+                      <p className="text-xs text-slate-500 dark:text-gray-400">
+                        {review.client_role ? `${review.client_role}, ` : ''}{review.company_name || 'Business Partner'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            /* Graceful Placeholder when building portfolio testimonials */
+            <div className="bg-white dark:bg-[#0e0e0e] rounded-3xl p-8 sm:p-12 text-center border border-slate-200 dark:border-cyber-gray shadow-sm max-w-3xl mx-auto">
+              <div className="w-14 h-14 rounded-2xl bg-brand-50 dark:bg-cyber-blue/10 border border-brand-200 dark:border-cyber-blue/30 text-brand-600 dark:text-cyber-blue flex items-center justify-center mx-auto mb-4 neon-border">
+                <Sparkles size={24} />
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
+                Proven Track Record in Operations & Systems
+              </h3>
+              <p className="text-sm text-slate-600 dark:text-gray-400 mb-6 max-w-xl mx-auto leading-relaxed">
+                With over 15+ years managing data integrity, operational processes, and compliance, I help founders and teams build digital tools that replace manual chaos with reliable workflows.
+              </p>
+              <button
+                onClick={() => openBookingWithService()}
+                className="inline-flex items-center gap-2 bg-brand-600 dark:bg-cyber-blue text-white dark:text-cyber-dark px-7 py-3 rounded-full font-bold text-sm hover:bg-brand-700 dark:hover:bg-white transition-all shadow-md cursor-pointer"
+              >
+                <CalendarCheck size={16} />
+                <span>Book Your System Consultation</span>
+              </button>
+            </div>
+          )}
         </div>
       </section>
 
@@ -310,7 +432,6 @@ function App() {
       <section id="resume" className="py-24 relative z-10">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="bg-white dark:bg-cyber-gray rounded-3xl p-8 sm:p-12 border border-slate-100 dark:border-cyber-gray hover:border-brand-200 dark:hover:border-cyber-blue/30 transition-colors duration-300 relative overflow-hidden shadow-2xl">
-            {/* Decorative background element */}
             <div className="absolute top-0 right-0 -mr-20 -mt-20 w-64 h-64 bg-brand-100 dark:bg-cyber-blue rounded-full blur-[120px] opacity-40 dark:opacity-20"></div>
             
             <div className="relative z-10">
@@ -332,7 +453,6 @@ function App() {
                       garciarobertrich@gmail.com
                     </a>
                   </div>
-                  {/* Quick Chat / Call Icons */}
                   <div className="flex items-center gap-2 pt-1">
                     <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-gray-400 mr-1">Direct Channels:</span>
                     <a href="https://wa.me/639175291018" target="_blank" rel="noopener noreferrer" className="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 text-emerald-600 dark:text-emerald-400 hover:scale-110 transition-transform shadow-sm" title="WhatsApp Message">
@@ -401,7 +521,6 @@ function App() {
           </p>
 
           <div className="flex flex-col items-center gap-6">
-            {/* Primary Action Button -> Opens CRM Booking Modal */}
             <button 
               onClick={() => openBookingWithService()}
               className="inline-flex items-center gap-3 bg-brand-500 dark:bg-cyber-blue text-white dark:text-cyber-dark px-9 py-4 rounded-full font-bold text-lg hover:bg-brand-400 dark:hover:bg-white transition-all shadow-[0_0_25px_rgba(20,184,166,0.3)] dark:shadow-[0_0_25px_rgba(0,242,255,0.45)] hover:scale-105 cursor-pointer"
@@ -410,7 +529,6 @@ function App() {
               <span>Book A System Consultation</span>
             </button>
 
-            {/* Direct Connect Buttons */}
             <div className="flex flex-wrap justify-center items-center gap-3 mt-2">
               <a 
                 href={directEmailLink}
