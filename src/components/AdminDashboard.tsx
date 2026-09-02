@@ -286,6 +286,10 @@ export const AdminDashboard: React.FC = () => {
   // Toggle Feature on Portfolio
   const handleToggleFeatured = async (item: TestimonialRecord) => {
     if (!supabase) return;
+    if (item.rating < 4) {
+      alert("🔒 1 to 3-star reviews are strictly for your internal eyes only and cannot be featured publicly on your portfolio.");
+      return;
+    }
     const newFeatured = !item.is_featured;
     const newStatus = newFeatured ? 'approved' : item.status;
 
@@ -740,7 +744,13 @@ export const AdminDashboard: React.FC = () => {
                             {t.status}
                           </span>
 
-                          {t.is_featured && (
+                          {t.rating <= 3 && t.status === 'submitted' && (
+                            <span className="text-[10px] uppercase font-mono px-2.5 py-0.5 rounded-full font-bold bg-rose-950/40 border border-rose-800 text-rose-400 flex items-center gap-1">
+                              🔒 Private Internal (Eyes Only)
+                            </span>
+                          )}
+
+                          {t.is_featured && t.rating >= 4 && (
                             <span className="text-[10px] uppercase font-mono px-2.5 py-0.5 rounded-full font-bold bg-cyber-blue/10 border border-cyber-blue/40 text-cyber-blue flex items-center gap-1">
                               <Sparkles size={10} />
                               Live on Portfolio

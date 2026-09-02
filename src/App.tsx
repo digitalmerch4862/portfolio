@@ -74,6 +74,7 @@ function App() {
           .select('*')
           .eq('is_featured', true)
           .eq('status', 'approved')
+          .gte('rating', 4)
           .order('created_at', { ascending: false });
 
         if (!error && data) {
