@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowRight, BarChart3, Settings, TrendingUp, CheckCircle, ExternalLink, Mail, Phone, MapPin, Moon, Sun } from 'lucide-react';
+import { ArrowRight, BarChart3, Settings, TrendingUp, CheckCircle, ExternalLink, Mail, Phone, MapPin, Moon, Sun, Database, Cpu, Layers, ShieldCheck, Terminal, Code2, Workflow } from 'lucide-react';
 
 function App() {
-  const [isDark, setIsDark] = useState(true); // Default to agency dark theme
+  const [isDark, setIsDark] = useState(true);
 
   useEffect(() => {
     if (isDark) {
@@ -14,11 +14,47 @@ function App() {
 
   const toggleTheme = () => setIsDark(!isDark);
 
-  const coreSkills = [
-    "Data Collation & Validation", "Data Encoding", "Records Management", 
-    "Scheduling & Coordination", "Document Preparation", "Compliance Monitoring", 
-    "Turnaround-Time Tracking", "Report Preparation", "Follow-Up Management", 
-    "Customer Communication", "Confidential Records Handling", "Data Privacy Awareness"
+  const skillCategories = [
+    {
+      category: "Business Systems & Operations",
+      skills: ["Custom Business Systems", "Workflow Automation", "Process Optimization", "Records & Data Management", "Compliance & Data Privacy"]
+    },
+    {
+      category: "Frontend & Full-Stack",
+      skills: ["React", "TypeScript", "JavaScript", "Tailwind CSS", "Modern Web Architecture", "Responsive UI/UX"]
+    },
+    {
+      category: "Data & Architecture",
+      skills: ["Data Collation & Validation", "Database Structuring", "Tracking & Audit Trails", "Turnaround-Time Optimization"]
+    },
+    {
+      category: "Automation & Integrations",
+      skills: ["CRM & API Integrations", "Automated Reporting", "Document Generation", "Git & CI/CD Deployment"]
+    }
+  ];
+
+  const featuredSolutions = [
+    {
+      title: "Custom Business Management Systems",
+      icon: <Layers size={24} />,
+      problem: "Fragmented spreadsheets and paper-based tracking lead to errors, missing records, and slow operations.",
+      solution: "Centralized web-based platforms that digitize workflows, enforce data validation, and provide real-time operational visibility.",
+      value: "Reduces manual workload, ensures audit compliance, and creates scalable standard operating procedures."
+    },
+    {
+      title: "Business Process & Workflow Automation",
+      icon: <Workflow size={24} />,
+      problem: "Repetitive manual data entry, document routing, and delayed stakeholder follow-ups eat up valuable team hours.",
+      solution: "Automated pipelines that handle document verification, status notifications, and cross-platform data syncing.",
+      value: "Cuts processing turnaround times and minimizes human error in day-to-day administrative tasks."
+    },
+    {
+      title: "Operations Dashboards & Reporting Systems",
+      icon: <BarChart3 size={24} />,
+      problem: "Business owners lack clear, immediate insight into bottlenecks, pending deliverables, and team throughput.",
+      solution: "Interactive dashboards that collate multi-source data into clear KPIs, turnaround metrics, and status monitors.",
+      value: "Empowers leadership with actionable data to make informed operational decisions and improve sales conversions."
+    }
   ];
 
   return (
@@ -35,9 +71,10 @@ function App() {
               </span>
             </div>
             <div className="hidden md:flex items-center space-x-8">
-              <a href="#services" className="text-slate-600 dark:text-gray-300 hover:text-brand-600 dark:hover:text-cyber-blue font-medium transition-colors">Services</a>
+              <a href="#services" className="text-slate-600 dark:text-gray-300 hover:text-brand-600 dark:hover:text-cyber-blue font-medium transition-colors">Solutions</a>
               <a href="#about" className="text-slate-600 dark:text-gray-300 hover:text-brand-600 dark:hover:text-cyber-blue font-medium transition-colors">About</a>
-              <a href="#resume" className="text-slate-600 dark:text-gray-300 hover:text-brand-600 dark:hover:text-cyber-blue font-medium transition-colors">Resume</a>
+              <a href="#skills" className="text-slate-600 dark:text-gray-300 hover:text-brand-600 dark:hover:text-cyber-blue font-medium transition-colors">Skills</a>
+              <a href="#resume" className="text-slate-600 dark:text-gray-300 hover:text-brand-600 dark:hover:text-cyber-blue font-medium transition-colors">Background</a>
               
               <button 
                 onClick={toggleTheme} 
@@ -66,28 +103,28 @@ function App() {
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-400 dark:bg-cyber-blue opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-brand-500 dark:bg-cyber-blue"></span>
                 </span>
-                15+ Years of Professional Experience
+                Business Systems & Automation Developer
               </div>
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-slate-900 dark:text-white leading-[1.1] mb-6 tracking-tight transition-colors">
-                Empowering businesses to <span className="text-brand-600 dark:text-cyber-blue dark:neon-text block mt-2">scale and succeed.</span>
+                Building custom systems that <span className="text-brand-600 dark:text-cyber-blue dark:neon-text block mt-2">streamline operations & scale businesses.</span>
               </h1>
-              <p className="text-lg sm:text-xl text-slate-600 dark:text-gray-400 mb-8 max-w-2xl mx-auto lg:mx-0 leading-relaxed transition-colors">
-                Hi, I'm Robert Rich Garcia. I help businesses navigate their journey by improving sales, creating rock-solid operational systems, and driving more targeted traffic through industry best practices.
+              <p className="text-lg sm:text-xl text-slate-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto lg:mx-0 leading-relaxed transition-colors">
+                I design and build tailored business systems that eliminate repetitive manual tasks, organize complex data, and solve core operational bottlenecks using modern web technologies.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                 <a href="#contact" className="inline-flex items-center justify-center gap-2 bg-slate-900 dark:bg-cyber-blue text-white dark:text-cyber-dark px-8 py-4 rounded-full font-bold hover:bg-slate-800 dark:hover:bg-white transition-all shadow-lg dark:shadow-[0_0_15px_rgba(0,242,255,0.4)] dark:hover:shadow-[0_0_25px_rgba(0,242,255,0.6)]">
-                  Start Your Journey
+                  Consult On A System
                   <ArrowRight size={20} />
                 </a>
                 <a href="https://my.dmerch.store/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2 bg-white dark:bg-cyber-gray/50 text-slate-700 dark:text-white border border-slate-200 dark:border-cyber-gray px-8 py-4 rounded-full font-semibold hover:bg-slate-50 hover:border-brand-300 dark:hover:border-cyber-blue dark:hover:text-cyber-blue transition-all">
-                  Visit My Agency
+                  Visit DigitalMerch Agency
                   <ExternalLink size={18} />
                 </a>
               </div>
             </div>
 
             <div className="lg:col-span-6 relative">
-              <div className="group relative rounded-3xl overflow-hidden aspect-[4/5] sm:aspect-video lg:aspect-[4/5] xl:aspect-square neon-border bg-slate-200 dark:bg-cyber-gray transition-colors">
+              <div className="group relative rounded-3xl overflow-hidden aspect-[4/5] sm:aspect-video lg:aspect-[4/5] xl:aspect-square neon-border bg-slate-200 dark:bg-cyber-gray transition-colors cursor-pointer">
                 {/* Hero Image */}
                 <img 
                   src="/hero-image.jpg" 
@@ -96,7 +133,7 @@ function App() {
                 />
                 
                 {/* Overlay gradient */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/20 dark:from-cyber-dark via-transparent to-transparent opacity-80 pointer-events-none transition-opacity duration-700 group-hover:opacity-40"></div>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/20 dark:from-cyber-dark via-transparent to-transparent opacity-80 pointer-events-none transition-opacity duration-700 group-hover:opacity-30"></div>
               </div>
               
               {/* Floating Badge */}
@@ -106,8 +143,8 @@ function App() {
                     <TrendingUp size={24} />
                   </div>
                   <div>
-                    <p className="text-slate-900 dark:text-white font-bold text-lg transition-colors">Proven Results</p>
-                    <p className="text-slate-500 dark:text-cyber-blue text-sm transition-colors">Driving revenue & growth</p>
+                    <p className="text-slate-900 dark:text-white font-bold text-lg transition-colors">15+ Years</p>
+                    <p className="text-slate-500 dark:text-cyber-blue text-sm transition-colors">Operations & System Experience</p>
                   </div>
                 </div>
               </div>
@@ -117,47 +154,43 @@ function App() {
         </div>
       </section>
 
-      {/* Value Proposition / Services */}
+      {/* Solutions / Value Proposition */}
       <section id="services" className="py-24 border-y border-slate-100 dark:border-cyber-gray relative z-10 bg-white dark:bg-cyber-dark/50 backdrop-blur-sm transition-colors duration-300">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white mb-6 tracking-tight transition-colors">How I can transform your business</h2>
-            <p className="text-lg text-slate-600 dark:text-gray-400 transition-colors">Implementing the best practices to turn your bottlenecks into breakthroughs.</p>
+            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white mb-6 tracking-tight transition-colors">
+              Business Systems & Solutions
+            </h2>
+            <p className="text-lg text-slate-600 dark:text-gray-400 transition-colors">
+              I don’t just write code—I analyze how your business functions and develop practical digital systems that solve real operational bottlenecks.
+            </p>
           </div>
           
           <div className="grid md:grid-cols-3 gap-8">
-            {/* Service 1 */}
-            <div className="p-8 rounded-2xl bg-slate-50 dark:bg-cyber-gray border border-slate-100 dark:border-cyber-gray hover:border-brand-300 dark:hover:border-cyber-blue/50 hover:shadow-lg dark:hover:shadow-[0_0_30px_rgba(0,242,255,0.1)] transition-all group">
-              <div className="w-14 h-14 bg-white dark:bg-cyber-dark border border-slate-200 dark:border-cyber-gray text-brand-600 dark:text-cyber-blue rounded-xl flex items-center justify-center mb-6 group-hover:neon-border group-hover:scale-110 transition-all">
-                <BarChart3 size={28} />
+            {featuredSolutions.map((item, idx) => (
+              <div key={idx} className="p-8 rounded-2xl bg-slate-50 dark:bg-cyber-gray border border-slate-100 dark:border-cyber-gray hover:border-brand-300 dark:hover:border-cyber-blue/50 hover:shadow-lg dark:hover:shadow-[0_0_30px_rgba(0,242,255,0.1)] transition-all flex flex-col justify-between group">
+                <div>
+                  <div className="w-14 h-14 bg-white dark:bg-cyber-dark border border-slate-200 dark:border-cyber-gray text-brand-600 dark:text-cyber-blue rounded-xl flex items-center justify-center mb-6 group-hover:neon-border group-hover:scale-110 transition-all">
+                    {item.icon}
+                  </div>
+                  <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3 transition-colors">{item.title}</h3>
+                  <div className="space-y-3 mb-6">
+                    <div>
+                      <span className="text-xs font-semibold text-rose-500 uppercase tracking-wider">Business Problem</span>
+                      <p className="text-sm text-slate-600 dark:text-gray-400 mt-0.5">{item.problem}</p>
+                    </div>
+                    <div>
+                      <span className="text-xs font-semibold text-brand-600 dark:text-cyber-blue uppercase tracking-wider">System Solution</span>
+                      <p className="text-sm text-slate-700 dark:text-gray-300 mt-0.5">{item.solution}</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="pt-4 border-t border-slate-200 dark:border-cyber-gray/60">
+                  <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">Business Impact</span>
+                  <p className="text-xs text-slate-600 dark:text-gray-400 mt-1">{item.value}</p>
+                </div>
               </div>
-              <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3 transition-colors">Improve Sales</h3>
-              <p className="text-slate-600 dark:text-gray-400 leading-relaxed transition-colors">
-                Optimize your sales funnels and conversion rates. I analyze your current processes and implement strategies that directly impact your bottom line.
-              </p>
-            </div>
-
-            {/* Service 2 */}
-            <div className="p-8 rounded-2xl bg-slate-50 dark:bg-cyber-gray border border-slate-100 dark:border-cyber-gray hover:border-brand-300 dark:hover:border-cyber-blue/50 hover:shadow-lg dark:hover:shadow-[0_0_30px_rgba(0,242,255,0.1)] transition-all group">
-              <div className="w-14 h-14 bg-white dark:bg-cyber-dark border border-slate-200 dark:border-cyber-gray text-brand-600 dark:text-cyber-blue rounded-xl flex items-center justify-center mb-6 group-hover:neon-border group-hover:scale-110 transition-all">
-                <Settings size={28} />
-              </div>
-              <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3 transition-colors">Create Systems</h3>
-              <p className="text-slate-600 dark:text-gray-400 leading-relaxed transition-colors">
-                Build scalable, repeatable processes. Backed by 15+ years of admin and compliance experience, I establish systems that let your business run like a well-oiled machine.
-              </p>
-            </div>
-
-            {/* Service 3 */}
-            <div className="p-8 rounded-2xl bg-slate-50 dark:bg-cyber-gray border border-slate-100 dark:border-cyber-gray hover:border-brand-300 dark:hover:border-cyber-blue/50 hover:shadow-lg dark:hover:shadow-[0_0_30px_rgba(0,242,255,0.1)] transition-all group">
-              <div className="w-14 h-14 bg-white dark:bg-cyber-dark border border-slate-200 dark:border-cyber-gray text-brand-600 dark:text-cyber-blue rounded-xl flex items-center justify-center mb-6 group-hover:neon-border group-hover:scale-110 transition-all">
-                <TrendingUp size={28} />
-              </div>
-              <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3 transition-colors">Drive Traffic</h3>
-              <p className="text-slate-600 dark:text-gray-400 leading-relaxed transition-colors">
-                Get more eyes on your products. I utilize proven marketing methodologies and traffic-generation tactics to attract your ideal target audience.
-              </p>
-            </div>
+            ))}
           </div>
 
           {/* Agency Banner */}
@@ -166,12 +199,12 @@ function App() {
             <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-64 h-64 bg-teal-500 dark:bg-cyber-blue rounded-full blur-[100px] opacity-20 dark:opacity-10 transition-opacity"></div>
             
             <div className="relative z-10">
-              <h3 className="text-2xl sm:text-3xl font-bold mb-4">Looking for full-scale agency services?</h3>
+              <h3 className="text-2xl sm:text-3xl font-bold mb-4">Looking for full-scale agency deployment?</h3>
               <p className="text-brand-100 dark:text-gray-300 mb-8 max-w-2xl mx-auto text-lg transition-colors">
-                Through my agency, <strong className="text-white dark:text-cyber-blue transition-colors">DigitalMerch</strong>, we provide comprehensive solutions to elevate your digital presence, build custom business systems, and scale your growth.
+                Through my agency, <strong className="text-white dark:text-cyber-blue transition-colors">DigitalMerch</strong>, we engineer tailored business automation, custom software, and digital infrastructure to scale your operations.
               </p>
               <a href="https://my.dmerch.store/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 bg-white dark:bg-cyber-blue text-brand-900 dark:text-cyber-dark px-8 py-4 rounded-full font-bold hover:bg-brand-50 dark:hover:bg-white transition-all hover:scale-105 shadow-xl dark:shadow-[0_0_20px_rgba(0,242,255,0.3)]">
-                Visit DigitalMerch
+                Explore DigitalMerch Services
                 <ExternalLink size={20} />
               </a>
             </div>
@@ -179,7 +212,39 @@ function App() {
         </div>
       </section>
 
-      {/* Resume Section */}
+      {/* Skills Matrix */}
+      <section id="skills" className="py-24 relative z-10 bg-slate-100/50 dark:bg-cyber-dark/30">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white mb-4 tracking-tight">
+              Technical & Operational Capabilities
+            </h2>
+            <p className="text-slate-600 dark:text-gray-400 text-lg">
+              Structured to bridge the gap between business operations and technical development.
+            </p>
+          </div>
+
+          <div className="grid sm:grid-cols-2 gap-6">
+            {skillCategories.map((group, i) => (
+              <div key={i} className="bg-white dark:bg-cyber-gray p-6 sm:p-8 rounded-2xl border border-slate-200 dark:border-cyber-gray/80 shadow-sm hover:border-brand-300 dark:hover:border-cyber-blue/30 transition-all">
+                <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-brand-500 dark:bg-cyber-blue"></div>
+                  {group.category}
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  {group.skills.map((skill, sIdx) => (
+                    <span key={sIdx} className="bg-slate-50 dark:bg-cyber-dark border border-slate-200/80 dark:border-cyber-gray text-slate-700 dark:text-gray-300 px-3.5 py-1.5 rounded-lg text-sm font-medium hover:border-brand-400 dark:hover:border-cyber-blue transition-colors">
+                      {skill}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Background & Summary Section */}
       <section id="resume" className="py-24 relative z-10">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="bg-white dark:bg-cyber-gray rounded-3xl p-8 sm:p-12 border border-slate-100 dark:border-cyber-gray hover:border-brand-200 dark:hover:border-cyber-blue/30 transition-colors duration-300 relative overflow-hidden shadow-2xl">
@@ -190,7 +255,9 @@ function App() {
               <div className="flex flex-col md:flex-row md:justify-between md:items-end mb-10 pb-10 border-b border-slate-100 dark:border-cyber-dark transition-colors duration-300">
                 <div>
                   <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white mb-2 tracking-tight transition-colors">Robert Rich Garcia</h2>
-                  <p className="text-xl text-brand-600 dark:text-cyber-blue font-medium dark:neon-text transition-colors">Administrative, Compliance & Systems Professional</p>
+                  <p className="text-xl text-brand-600 dark:text-cyber-blue font-medium dark:neon-text transition-colors">
+                    Business Systems & Automation Developer
+                  </p>
                 </div>
                 <div className="mt-6 md:mt-0 space-y-2 text-slate-500 dark:text-gray-400 transition-colors">
                   <div className="flex items-center gap-2">
@@ -208,7 +275,7 @@ function App() {
                 </div>
               </div>
               
-              <div className="mb-12">
+              <div className="mb-10">
                 <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2 transition-colors">
                   <div className="w-8 h-8 rounded-lg bg-brand-50 dark:bg-cyber-dark border border-brand-200 dark:border-cyber-blue/50 text-brand-600 dark:text-cyber-blue flex items-center justify-center transition-colors">
                     <span className="font-bold">1</span>
@@ -216,7 +283,7 @@ function App() {
                   Professional Summary
                 </h3>
                 <p className="text-lg text-slate-600 dark:text-gray-300 leading-relaxed transition-colors">
-                  Highly organized administrative and compliance professional with <strong className="text-brand-700 dark:text-cyber-blue transition-colors">15+ years of experience</strong> in documentation, data management, scheduling, records validation, reporting, government processing, client coordination, and confidential information handling. Experienced in reviewing documents for completeness and accuracy, maintaining trackers and databases, coordinating schedules and requirements with internal and external stakeholders, monitoring pending items against turnaround times, preparing summary reports, and ensuring compliance with established procedures.
+                  Business Systems Developer with over <strong>15+ years of background in operational data management, documentation, and compliance</strong>, specializing in designing custom web systems and automated workflows that solve real business bottlenecks. I bridge the gap between business operations and modern software—turning manual spreadsheets, paper trails, and fragmented processes into centralized, scalable digital tools. Proven expertise in building intuitive dashboards, internal management platforms, and automated tracking systems that eliminate repetitive tasks, improve data integrity, and accelerate turnaround times.
                 </p>
               </div>
 
@@ -225,13 +292,18 @@ function App() {
                   <div className="w-8 h-8 rounded-lg bg-brand-50 dark:bg-cyber-dark border border-brand-200 dark:border-cyber-blue/50 text-brand-600 dark:text-cyber-blue flex items-center justify-center transition-colors">
                     <span className="font-bold">2</span>
                   </div>
-                  Core Skills
+                  Core Operational & System Strengths
                 </h3>
-                <div className="flex flex-wrap gap-3">
-                  {coreSkills.map((skill, index) => (
-                    <div key={index} className="flex items-center gap-2 bg-slate-50 dark:bg-cyber-dark border border-slate-200 dark:border-cyber-gray px-4 py-2.5 rounded-full text-slate-700 dark:text-gray-300 font-medium text-sm hover:border-brand-400 dark:hover:border-cyber-blue hover:text-brand-700 dark:hover:text-cyber-blue transition-all hover:shadow-md dark:hover:shadow-[0_0_10px_rgba(0,242,255,0.2)]">
-                      <CheckCircle size={16} className="text-brand-500 dark:text-cyber-blue transition-colors" />
-                      {skill}
+                <div className="grid sm:grid-cols-2 gap-4">
+                  {[
+                    "Transforming complex, manual requirements into intuitive web applications",
+                    "Designing databases and trackers with strict data validation & privacy standards",
+                    "Minimizing processing turnaround times through automated status & follow-up pipelines",
+                    "Building clean, actionable dashboards that provide leadership with real-time operational insights"
+                  ].map((item, index) => (
+                    <div key={index} className="flex items-start gap-3 bg-slate-50 dark:bg-cyber-dark border border-slate-200 dark:border-cyber-gray p-4 rounded-xl text-slate-700 dark:text-gray-300 text-sm">
+                      <CheckCircle size={18} className="text-brand-500 dark:text-cyber-blue flex-shrink-0 mt-0.5" />
+                      <span>{item}</span>
                     </div>
                   ))}
                 </div>
@@ -247,9 +319,9 @@ function App() {
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 relative">
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-brand-500 dark:bg-cyber-blue blur-[150px] opacity-10 rounded-full pointer-events-none transition-colors duration-300"></div>
           
-          <h2 className="text-3xl sm:text-5xl font-bold mb-6 tracking-tight">Ready to transform your business?</h2>
+          <h2 className="text-3xl sm:text-5xl font-bold mb-6 tracking-tight">Ready to optimize your business operations?</h2>
           <p className="text-xl text-slate-400 mb-10 max-w-2xl mx-auto transition-colors">
-            Let's discuss how we can improve your sales, build reliable systems, and scale your product traffic together.
+            Let's discuss how we can build custom digital systems, automate your manual workflows, and scale your operations together.
           </p>
           <div className="flex flex-col sm:flex-row justify-center items-center gap-6">
             <a href="mailto:garciarobertrich@gmail.com" className="inline-flex items-center gap-2 bg-brand-500 dark:bg-cyber-blue text-white dark:text-cyber-dark px-8 py-4 rounded-full font-bold text-lg hover:bg-brand-400 dark:hover:bg-white transition-all shadow-[0_0_20px_rgba(20,184,166,0.2)] dark:shadow-[0_0_20px_rgba(0,242,255,0.4)]">
