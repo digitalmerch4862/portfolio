@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { X, Calendar, Clock, CheckCircle, ArrowRight, ArrowLeft, Loader2, Sparkles, Building2, User, Mail, Phone, Video, MessageSquare } from 'lucide-react';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 
@@ -7,6 +7,13 @@ interface BookingModalProps {
   onClose: () => void;
   defaultService?: string;
 }
+
+const AVAILABLE_TIME_SLOTS = [
+  '6:00 PM - 7:00 PM',
+  '7:00 PM - 8:00 PM',
+  '8:00 PM - 9:00 PM',
+  '9:00 PM - 10:00 PM',
+];
 
 export const BookingModal: React.FC<BookingModalProps> = ({
   isOpen,
@@ -19,6 +26,29 @@ export const BookingModal: React.FC<BookingModalProps> = ({
   const [referenceId, setReferenceId] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
 
+  // Generate 2 business weeks (10 weekdays: Monday - Friday)
+  const availableDates = useMemo(() => {
+    const dates: Array<{ dateStr: string; displayDay: string; displayDate: string; fullDateLabel: string }> = [];
+    const current = new Date();
+    // If past 8 PM, start from tomorrow
+    if (current.getHours() >= 20) {
+      current.setDate(current.getDate() + 1);
+    }
+
+    while (dates.length < 10) {
+      const dayOfWeek = current.getDay(); // 0 = Sun, 6 = Sat
+      if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+        const dateStr = current.toISOString().split('T')[0];
+        const displayDay = current.toLocaleDateString('en-US', { weekday: 'short' });
+        const displayDate = current.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        const fullDateLabel = current.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+        dates.push({ dateStr, displayDay, displayDate, fullDateLabel });
+      }
+      current.setDate(current.getDate() + 1);
+    }
+    return dates;
+  }, []);
+
   // Form State
   const [formData, setFormData] = useState({
     name: '',
@@ -28,8 +58,8 @@ export const BookingModal: React.FC<BookingModalProps> = ({
     service_type: defaultService,
     bottleneck: '',
     current_tools: '',
-    preferred_date: '',
-    preferred_time_slot: 'Morning (9:00 AM - 12:00 PM)',
+    preferred_date: availableDates[0]?.dateStr || '',
+    preferred_time_slot: AVAILABLE_TIME_SLOTS[0],
     meeting_platform: 'Google Meet',
   });
 
@@ -149,12 +179,12 @@ export const BookingModal: React.FC<BookingModalProps> = ({
             </div>
             <div>
               <h3 className="text-lg font-bold text-slate-900 dark:text-white">Book System Consultation</h3>
-              <p className="text-xs text-slate-500 dark:text-gray-400">Tailored Operational Assessment with Robert Rich Garcia</p>
+              <p className="text-xs text-slate-500 dark:text-gray-400">Monday to Friday • 6:00 PM – 10:00 PM PHT</p>
             </div>
           </div>
           <button 
             onClick={handleResetAndClose}
-            className="p-2 rounded-full text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-cyber-gray transition-colors"
+            className="p-2 rounded-full text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-cyber-gray transition-colors cursor-pointer"
           >
             <X size={20} />
           </button>
@@ -278,7 +308,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                   <div className="pt-4 flex justify-end">
                     <button
                       type="submit"
-                      className="inline-flex items-center gap-2 bg-brand-600 dark:bg-cyber-blue text-white dark:text-cyber-dark px-6 py-3 rounded-xl font-bold text-sm hover:bg-brand-700 dark:hover:bg-white transition-all shadow-md dark:shadow-[0_0_15px_rgba(0,242,255,0.3)]"
+                      className="inline-flex items-center gap-2 bg-brand-600 dark:bg-cyber-blue text-white dark:text-cyber-dark px-6 py-3 rounded-xl font-bold text-sm hover:bg-brand-700 dark:hover:bg-white transition-all shadow-md dark:shadow-[0_0_15px_rgba(0,242,255,0.3)] cursor-pointer"
                     >
                       <span>Next: System Needs</span>
                       <ArrowRight size={16} />
@@ -332,7 +362,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                       name="current_tools"
                       value={formData.current_tools}
                       onChange={handleChange}
-                      placeholder="e.g. Google Sheets, Excel, Notion, GoHighLevel, Shopify"
+                      placeholder="e.g. Google Sheets, Excel, Notion, Shopify"
                       className="w-full bg-slate-50 dark:bg-cyber-dark border border-slate-200 dark:border-cyber-gray text-slate-900 dark:text-white rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-500 dark:focus:border-cyber-blue transition-colors"
                     />
                   </div>
@@ -341,67 +371,96 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                     <button
                       type="button"
                       onClick={handleBack}
-                      className="inline-flex items-center gap-1.5 text-slate-600 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white text-sm font-medium"
+                      className="inline-flex items-center gap-1.5 text-slate-600 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white text-sm font-medium cursor-pointer"
                     >
                       <ArrowLeft size={16} />
                       <span>Back</span>
                     </button>
                     <button
                       type="submit"
-                      className="inline-flex items-center gap-2 bg-brand-600 dark:bg-cyber-blue text-white dark:text-cyber-dark px-6 py-3 rounded-xl font-bold text-sm hover:bg-brand-700 dark:hover:bg-white transition-all shadow-md dark:shadow-[0_0_15px_rgba(0,242,255,0.3)]"
+                      className="inline-flex items-center gap-2 bg-brand-600 dark:bg-cyber-blue text-white dark:text-cyber-dark px-6 py-3 rounded-xl font-bold text-sm hover:bg-brand-700 dark:hover:bg-white transition-all shadow-md dark:shadow-[0_0_15px_rgba(0,242,255,0.3)] cursor-pointer"
                     >
-                      <span>Next: Schedule Session</span>
+                      <span>Next: Select Date & Time</span>
                       <ArrowRight size={16} />
                     </button>
                   </div>
                 </form>
               )}
 
-              {/* Step 3: Schedule & Submission */}
+              {/* Step 3: 2-Week Calendar (Monday-Friday) & Evening Time Slots (6PM-10PM) */}
               {step === 3 && (
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <div className="grid sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 dark:text-gray-300 uppercase tracking-wider mb-1.5">
-                        Preferred Date
+                <form onSubmit={handleSubmit} className="space-y-5">
+                  
+                  {/* Calendar Date Picker: 2-Week Window (10 Weekdays) */}
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <label className="block text-xs font-bold text-slate-700 dark:text-gray-300 uppercase tracking-wider">
+                        1. Select Available Date (Next 2 Weeks • Mon - Fri)
                       </label>
-                      <div className="relative">
-                        <Calendar size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-                        <input
-                          type="date"
-                          name="preferred_date"
-                          value={formData.preferred_date}
-                          onChange={handleChange}
-                          min={new Date().toISOString().split('T')[0]}
-                          className="w-full bg-slate-50 dark:bg-cyber-dark border border-slate-200 dark:border-cyber-gray text-slate-900 dark:text-white rounded-xl pl-10 pr-4 py-3 text-sm focus:outline-none focus:border-brand-500 dark:focus:border-cyber-blue transition-colors"
-                        />
-                      </div>
+                      <span className="text-[10px] text-brand-600 dark:text-cyber-blue font-mono font-semibold">
+                        Weekdays Only
+                      </span>
                     </div>
 
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 dark:text-gray-300 uppercase tracking-wider mb-1.5">
-                        Preferred Time Window
-                      </label>
-                      <div className="relative">
-                        <Clock size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-                        <select
-                          name="preferred_time_slot"
-                          value={formData.preferred_time_slot}
-                          onChange={handleChange}
-                          className="w-full bg-slate-50 dark:bg-cyber-dark border border-slate-200 dark:border-cyber-gray text-slate-900 dark:text-white rounded-xl pl-10 pr-4 py-3 text-sm focus:outline-none focus:border-brand-500 dark:focus:border-cyber-blue transition-colors"
-                        >
-                          <option value="Morning (9:00 AM - 12:00 PM)">Morning (9:00 AM - 12:00 PM)</option>
-                          <option value="Afternoon (1:00 PM - 5:00 PM)">Afternoon (1:00 PM - 5:00 PM)</option>
-                          <option value="Evening (6:00 PM - 8:00 PM)">Evening (6:00 PM - 8:00 PM)</option>
-                          <option value="Flexible / Anytime">Flexible / Anytime</option>
-                        </select>
-                      </div>
+                    <div className="grid grid-cols-5 gap-2">
+                      {availableDates.map(item => {
+                        const isSelected = formData.preferred_date === item.dateStr;
+                        return (
+                          <button
+                            key={item.dateStr}
+                            type="button"
+                            onClick={() => setFormData(prev => ({ ...prev, preferred_date: item.dateStr }))}
+                            className={`p-2.5 rounded-xl border text-center transition-all cursor-pointer flex flex-col items-center justify-center ${
+                              isSelected
+                                ? 'border-brand-500 dark:border-cyber-blue bg-brand-600 dark:bg-cyber-blue text-white dark:text-cyber-dark font-bold shadow-md dark:shadow-[0_0_15px_rgba(0,242,255,0.4)] scale-102'
+                                : 'border-slate-200 dark:border-cyber-gray bg-slate-50 dark:bg-[#141414] text-slate-700 dark:text-gray-300 hover:border-brand-300 dark:hover:border-cyber-blue/50'
+                            }`}
+                          >
+                            <span className="text-[10px] uppercase font-mono tracking-wider opacity-80">{item.displayDay}</span>
+                            <span className="text-xs font-extrabold mt-0.5">{item.displayDate}</span>
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
 
+                  {/* Evening Time Slots (6:00 PM - 10:00 PM) */}
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 dark:text-gray-300 uppercase tracking-wider mb-1.5">
-                      Preferred Meeting Platform
+                    <div className="flex items-center justify-between mb-2">
+                      <label className="block text-xs font-bold text-slate-700 dark:text-gray-300 uppercase tracking-wider">
+                        2. Select Evening Time Slot (6:00 PM – 10:00 PM PHT)
+                      </label>
+                      <span className="text-[10px] text-emerald-500 font-mono flex items-center gap-1 font-semibold">
+                        <Clock size={12} />
+                        1-Hour Sessions
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                      {AVAILABLE_TIME_SLOTS.map(slot => {
+                        const isSelected = formData.preferred_time_slot === slot;
+                        return (
+                          <button
+                            key={slot}
+                            type="button"
+                            onClick={() => setFormData(prev => ({ ...prev, preferred_time_slot: slot }))}
+                            className={`py-3 px-2 rounded-xl border text-center text-xs font-bold transition-all cursor-pointer ${
+                              isSelected
+                                ? 'border-brand-500 dark:border-cyber-blue bg-brand-50 dark:bg-cyber-blue/15 text-brand-600 dark:text-cyber-blue dark:neon-border scale-102 shadow-sm'
+                                : 'border-slate-200 dark:border-cyber-gray bg-slate-50 dark:bg-[#141414] text-slate-700 dark:text-gray-300 hover:border-slate-300 dark:hover:border-cyber-blue/40'
+                            }`}
+                          >
+                            {slot}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Meeting Platform */}
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-gray-300 uppercase tracking-wider mb-2">
+                      3. Preferred Meeting Platform
                     </label>
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                       {['Google Meet', 'Zoom', 'WhatsApp Call', 'Direct Phone'].map(platform => (
@@ -409,7 +468,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                           key={platform}
                           type="button"
                           onClick={() => setFormData(prev => ({ ...prev, meeting_platform: platform }))}
-                          className={`p-2.5 rounded-xl border text-xs font-medium transition-all text-center ${
+                          className={`p-2.5 rounded-xl border text-xs font-medium transition-all text-center cursor-pointer ${
                             formData.meeting_platform === platform
                               ? 'border-brand-500 dark:border-cyber-blue bg-brand-50 dark:bg-cyber-blue/10 text-brand-600 dark:text-cyber-blue font-bold shadow-sm'
                               : 'border-slate-200 dark:border-cyber-gray text-slate-600 dark:text-gray-400 hover:border-slate-300'
@@ -421,20 +480,25 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                     </div>
                   </div>
 
-                  <div className="p-3.5 bg-brand-50/50 dark:bg-cyber-blue/5 border border-brand-100 dark:border-cyber-blue/20 rounded-xl text-xs text-slate-600 dark:text-gray-300 space-y-1">
-                    <p className="font-semibold text-slate-900 dark:text-white flex items-center gap-1.5">
-                      <CheckCircle size={14} className="text-emerald-500" />
-                      What happens next:
-                    </p>
-                    <p>Your request will be recorded in our CRM, and you will receive an immediate confirmation email. Robert will confirm your session within 24 hours.</p>
+                  {/* Selected Summary Banner */}
+                  <div className="p-3 bg-brand-50/60 dark:bg-cyber-blue/5 border border-brand-100 dark:border-cyber-blue/20 rounded-xl text-xs text-slate-600 dark:text-gray-300 flex items-center justify-between">
+                    <div>
+                      <span className="text-[10px] font-mono text-brand-600 dark:text-cyber-blue uppercase font-bold block">Selected Slot:</span>
+                      <span className="font-semibold text-slate-900 dark:text-white">
+                        {availableDates.find(d => d.dateStr === formData.preferred_date)?.fullDateLabel || formData.preferred_date} • {formData.preferred_time_slot}
+                      </span>
+                    </div>
+                    <span className="text-[11px] font-mono bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 px-2.5 py-1 rounded-lg border border-emerald-300 dark:border-emerald-800">
+                      Confirmed Open
+                    </span>
                   </div>
 
-                  <div className="pt-4 flex justify-between items-center">
+                  <div className="pt-2 flex justify-between items-center">
                     <button
                       type="button"
                       onClick={handleBack}
                       disabled={loading}
-                      className="inline-flex items-center gap-1.5 text-slate-600 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white text-sm font-medium"
+                      className="inline-flex items-center gap-1.5 text-slate-600 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white text-sm font-medium cursor-pointer"
                     >
                       <ArrowLeft size={16} />
                       <span>Back</span>
@@ -442,16 +506,16 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                     <button
                       type="submit"
                       disabled={loading}
-                      className="inline-flex items-center gap-2 bg-brand-600 dark:bg-cyber-blue text-white dark:text-cyber-dark px-7 py-3 rounded-xl font-bold text-sm hover:bg-brand-700 dark:hover:bg-white transition-all shadow-lg dark:shadow-[0_0_20px_rgba(0,242,255,0.4)] disabled:opacity-50"
+                      className="inline-flex items-center gap-2 bg-brand-600 dark:bg-cyber-blue text-white dark:text-cyber-dark px-7 py-3 rounded-xl font-bold text-sm hover:bg-brand-700 dark:hover:bg-white transition-all shadow-lg dark:shadow-[0_0_20px_rgba(0,242,255,0.4)] disabled:opacity-50 cursor-pointer"
                     >
                       {loading ? (
                         <>
                           <Loader2 size={16} className="animate-spin" />
-                          <span>Registering in CRM...</span>
+                          <span>Registering Booking...</span>
                         </>
                       ) : (
                         <>
-                          <span>Confirm & Book Consultation</span>
+                          <span>Confirm & Book Appointment</span>
                           <CheckCircle size={16} />
                         </>
                       )}
@@ -470,7 +534,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
               <div className="space-y-1">
                 <h4 className="text-2xl font-bold text-slate-900 dark:text-white">Consultation Booked!</h4>
                 <p className="text-sm text-slate-600 dark:text-gray-300 max-w-md mx-auto">
-                  Thank you, <strong className="text-slate-900 dark:text-white">{formData.name}</strong>. Your consultation has been registered in our CRM system.
+                  Thank you, <strong className="text-slate-900 dark:text-white">{formData.name}</strong>. Your session has been registered in our CRM.
                 </p>
               </div>
 
@@ -484,8 +548,10 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                   <span className="font-medium text-slate-900 dark:text-white">{formData.service_type}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-500 dark:text-gray-400">Schedule:</span>
-                  <span className="font-medium text-emerald-600 dark:text-emerald-400">{formData.preferred_date || 'Flexible'} ({formData.preferred_time_slot})</span>
+                  <span className="text-slate-500 dark:text-gray-400">Confirmed Schedule:</span>
+                  <span className="font-medium text-emerald-600 dark:text-emerald-400">
+                    {availableDates.find(d => d.dateStr === formData.preferred_date)?.fullDateLabel || formData.preferred_date} ({formData.preferred_time_slot})
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-500 dark:text-gray-400">Platform:</span>
@@ -494,12 +560,12 @@ export const BookingModal: React.FC<BookingModalProps> = ({
               </div>
 
               <p className="text-xs text-slate-500 dark:text-gray-400 max-w-sm mx-auto">
-                A confirmation email has been dispatched to <strong>{formData.email}</strong>. Robert will contact you shortly with meeting credentials.
+                A confirmation email has been dispatched to <strong>{formData.email}</strong>. Robert will contact you with the meeting link for your evening session.
               </p>
 
               <div className="pt-4 flex flex-col sm:flex-row justify-center gap-3">
                 <a
-                  href={`https://wa.me/639175291018?text=${encodeURIComponent(`Hi Robert! I just booked a consultation for ${formData.service_type} (Ref: ${referenceId}). Looking forward to our session!`)}`}
+                  href={`https://wa.me/639175291018?text=${encodeURIComponent(`Hi Robert! I just booked an evening consultation for ${formData.service_type} on ${formData.preferred_date} at ${formData.preferred_time_slot} (Ref: ${referenceId}). Looking forward to our call!`)}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center justify-center gap-2 bg-emerald-600 text-white px-5 py-2.5 rounded-xl font-semibold text-xs hover:bg-emerald-700 transition-colors shadow-sm"
@@ -509,7 +575,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                 </a>
                 <button
                   onClick={handleResetAndClose}
-                  className="bg-slate-100 dark:bg-cyber-gray border border-slate-200 dark:border-cyber-gray text-slate-700 dark:text-white px-5 py-2.5 rounded-xl font-semibold text-xs hover:bg-slate-200 dark:hover:bg-cyber-blue/20 transition-colors"
+                  className="bg-slate-100 dark:bg-cyber-gray border border-slate-200 dark:border-cyber-gray text-slate-700 dark:text-white px-5 py-2.5 rounded-xl font-semibold text-xs hover:bg-slate-200 dark:hover:bg-cyber-blue/20 transition-colors cursor-pointer"
                 >
                   Done & Close
                 </button>
