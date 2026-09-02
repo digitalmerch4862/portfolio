@@ -26,6 +26,26 @@ function App() {
 
   const toggleTheme = () => setIsDark(!isDark);
 
+  // Auto-compose consultation / appointment inquiry email template
+  const emailSubject = encodeURIComponent("Consultation & Inquiry: Custom Business Systems / Automation");
+  const emailBody = encodeURIComponent(
+`Hi Robert,
+
+I would like to schedule a consultation / appointment regarding a custom business system for our operations.
+
+Here are a few details about our inquiry:
+- Name: 
+- Company / Business Name: 
+- Current Operational Bottleneck / Process to Automate: 
+- Desired Timeline / Budget: 
+- Preferred Date & Time for Call: 
+
+Looking forward to hearing from you!
+
+Best regards,`
+  );
+  const autoComposeMailto = `mailto:garciarobertrich@gmail.com?subject=${emailSubject}&body=${emailBody}`;
+
   const skillCategories = [
     {
       category: "Business Systems & Operations",
@@ -96,8 +116,8 @@ function App() {
                 {isDark ? <Sun size={20} /> : <Moon size={20} />}
               </button>
 
-              <a href="#contact" className="bg-brand-600 dark:bg-cyber-blue/10 border border-transparent dark:border-cyber-blue text-white dark:text-cyber-blue px-6 py-2.5 rounded-full font-medium hover:bg-brand-700 dark:hover:bg-cyber-blue dark:hover:text-cyber-dark transition-all dark:neon-border hover:shadow-lg dark:hover:shadow-[0_0_20px_#00f2ff]">
-                Let's Talk
+              <a href={autoComposeMailto} className="bg-brand-600 dark:bg-cyber-blue/10 border border-transparent dark:border-cyber-blue text-white dark:text-cyber-blue px-6 py-2.5 rounded-full font-medium hover:bg-brand-700 dark:hover:bg-cyber-blue dark:hover:text-cyber-dark transition-all dark:neon-border hover:shadow-lg dark:hover:shadow-[0_0_20px_#00f2ff]">
+                Book Consultation
               </a>
             </div>
           </div>
@@ -124,7 +144,7 @@ function App() {
                 I design and build tailored business systems that eliminate repetitive manual tasks, organize complex data, and solve core operational bottlenecks using modern web technologies.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                <a href="#contact" className="inline-flex items-center justify-center gap-2 bg-slate-900 dark:bg-cyber-blue text-white dark:text-cyber-dark px-8 py-4 rounded-full font-bold hover:bg-slate-800 dark:hover:bg-white transition-all shadow-lg dark:shadow-[0_0_15px_rgba(0,242,255,0.4)] dark:hover:shadow-[0_0_25px_rgba(0,242,255,0.6)]">
+                <a href={autoComposeMailto} className="inline-flex items-center justify-center gap-2 bg-slate-900 dark:bg-cyber-blue text-white dark:text-cyber-dark px-8 py-4 rounded-full font-bold hover:bg-slate-800 dark:hover:bg-white transition-all shadow-lg dark:shadow-[0_0_15px_rgba(0,242,255,0.4)] dark:hover:shadow-[0_0_25px_rgba(0,242,255,0.6)]">
                   Consult On A System
                   <ArrowRight size={20} />
                 </a>
@@ -278,7 +298,10 @@ function App() {
                   </div>
                   <div className="flex items-center gap-2">
                     <Mail size={18} className="text-brand-500 dark:text-cyber-blue" />
-                    <a href="mailto:garciarobertrich@gmail.com" className="hover:text-slate-800 dark:hover:text-white transition-colors">garciarobertrich@gmail.com</a>
+                    <a href={autoComposeMailto} className="hover:text-brand-600 dark:hover:text-cyber-blue transition-colors flex items-center gap-1.5" title="Click to compose inquiry email">
+                      <span>garciarobertrich@gmail.com</span>
+                      <span className="text-xs bg-brand-50 dark:bg-cyber-blue/10 text-brand-600 dark:text-cyber-blue px-2 py-0.5 rounded border border-brand-200 dark:border-cyber-blue/30">Auto-compose</span>
+                    </a>
                   </div>
                   {/* Quick Chat / Call Icons */}
                   <div className="flex items-center gap-2 pt-1">
@@ -349,9 +372,12 @@ function App() {
           </p>
 
           <div className="flex flex-col items-center gap-6">
-            <a href="mailto:garciarobertrich@gmail.com" className="inline-flex items-center gap-2 bg-brand-500 dark:bg-cyber-blue text-white dark:text-cyber-dark px-8 py-4 rounded-full font-bold text-lg hover:bg-brand-400 dark:hover:bg-white transition-all shadow-[0_0_20px_rgba(20,184,166,0.2)] dark:shadow-[0_0_20px_rgba(0,242,255,0.4)]">
-              <Mail size={20} />
-              garciarobertrich@gmail.com
+            <a 
+              href={autoComposeMailto} 
+              className="inline-flex items-center gap-3 bg-brand-500 dark:bg-cyber-blue text-white dark:text-cyber-dark px-8 py-4 rounded-full font-bold text-lg hover:bg-brand-400 dark:hover:bg-white transition-all shadow-[0_0_20px_rgba(20,184,166,0.2)] dark:shadow-[0_0_20px_rgba(0,242,255,0.4)] group"
+            >
+              <Mail size={20} className="group-hover:scale-110 transition-transform" />
+              <span>Send Consultation Inquiry (Auto-compose)</span>
             </a>
 
             {/* Direct Connect Buttons */}
