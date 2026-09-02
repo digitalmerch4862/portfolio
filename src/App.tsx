@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowRight, BarChart3, Settings, TrendingUp, CheckCircle, ExternalLink, Mail, MapPin, Moon, Sun, Layers, Workflow, MessageSquare, PhoneCall } from 'lucide-react';
+import { ArrowRight, BarChart3, Settings, TrendingUp, CheckCircle, ExternalLink, Mail, MapPin, Moon, Sun, Layers, Workflow, MessageSquare, PhoneCall, CalendarCheck } from 'lucide-react';
+import { BookingModal } from './components/BookingModal';
 
 const WhatsAppIcon = ({ size = 20, className = "" }: { size?: number; className?: string }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
@@ -15,6 +16,8 @@ const ViberIcon = ({ size = 20, className = "" }: { size?: number; className?: s
 
 function App() {
   const [isDark, setIsDark] = useState(true);
+  const [isBookingOpen, setIsBookingOpen] = useState(false);
+  const [selectedService, setSelectedService] = useState('Custom Business Management System');
 
   useEffect(() => {
     if (isDark) {
@@ -26,7 +29,11 @@ function App() {
 
   const toggleTheme = () => setIsDark(!isDark);
 
-  // Direct mailto link that immediately targets your email address
+  const openBookingWithService = (serviceName?: string) => {
+    if (serviceName) setSelectedService(serviceName);
+    setIsBookingOpen(true);
+  };
+
   const directEmailLink = "mailto:garciarobertrich@gmail.com";
 
   const skillCategories = [
@@ -76,6 +83,13 @@ function App() {
     <div className="min-h-screen bg-slate-50 dark:bg-cyber-dark selection:bg-brand-500 dark:selection:bg-cyber-blue selection:text-white dark:selection:text-cyber-dark font-sans text-slate-900 dark:text-white relative transition-colors duration-300">
       <div className="fixed inset-0 cyber-grid z-0 pointer-events-none opacity-50"></div>
       
+      {/* Booking Modal */}
+      <BookingModal
+        isOpen={isBookingOpen}
+        onClose={() => setIsBookingOpen(false)}
+        defaultService={selectedService}
+      />
+
       {/* Navigation */}
       <nav className="fixed w-full z-50 bg-white/80 dark:bg-cyber-dark/80 backdrop-blur-md border-b border-slate-200 dark:border-cyber-gray transition-colors duration-300">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -99,9 +113,12 @@ function App() {
                 {isDark ? <Sun size={20} /> : <Moon size={20} />}
               </button>
 
-              <a href={directEmailLink} className="bg-brand-600 dark:bg-cyber-blue/10 border border-transparent dark:border-cyber-blue text-white dark:text-cyber-blue px-6 py-2.5 rounded-full font-medium hover:bg-brand-700 dark:hover:bg-cyber-blue dark:hover:text-cyber-dark transition-all dark:neon-border hover:shadow-lg dark:hover:shadow-[0_0_20px_#00f2ff]">
+              <button
+                onClick={() => openBookingWithService()}
+                className="bg-brand-600 dark:bg-cyber-blue/10 border border-transparent dark:border-cyber-blue text-white dark:text-cyber-blue px-6 py-2.5 rounded-full font-medium hover:bg-brand-700 dark:hover:bg-cyber-blue dark:hover:text-cyber-dark transition-all dark:neon-border hover:shadow-lg dark:hover:shadow-[0_0_20px_#00f2ff] cursor-pointer"
+              >
                 Let's Talk
-              </a>
+              </button>
             </div>
           </div>
         </div>
@@ -127,10 +144,14 @@ function App() {
                 I design and build tailored business systems that eliminate repetitive manual tasks, organize complex data, and solve core operational bottlenecks using modern web technologies.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                <a href={directEmailLink} className="inline-flex items-center justify-center gap-2 bg-slate-900 dark:bg-cyber-blue text-white dark:text-cyber-dark px-8 py-4 rounded-full font-bold hover:bg-slate-800 dark:hover:bg-white transition-all shadow-lg dark:shadow-[0_0_15px_rgba(0,242,255,0.4)] dark:hover:shadow-[0_0_25px_rgba(0,242,255,0.6)]">
-                  Consult On A System
-                  <ArrowRight size={20} />
-                </a>
+                <button 
+                  onClick={() => openBookingWithService()}
+                  className="inline-flex items-center justify-center gap-2 bg-slate-900 dark:bg-cyber-blue text-white dark:text-cyber-dark px-8 py-4 rounded-full font-bold hover:bg-slate-800 dark:hover:bg-white transition-all shadow-lg dark:shadow-[0_0_15px_rgba(0,242,255,0.4)] dark:hover:shadow-[0_0_25px_rgba(0,242,255,0.6)] cursor-pointer"
+                >
+                  <CalendarCheck size={20} />
+                  <span>Consult On A System</span>
+                  <ArrowRight size={18} />
+                </button>
                 <a href="https://my.dmerch.store/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2 bg-white dark:bg-cyber-gray/50 text-slate-700 dark:text-white border border-slate-200 dark:border-cyber-gray px-8 py-4 rounded-full font-semibold hover:bg-slate-50 hover:border-brand-300 dark:hover:border-cyber-blue dark:hover:text-cyber-blue transition-all">
                   Visit DigitalMerch Agency
                   <ExternalLink size={18} />
@@ -200,10 +221,19 @@ function App() {
                     </div>
                   </div>
                 </div>
-                <div className="pt-4 border-t border-slate-200 dark:border-cyber-gray/60">
-                  <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">Business Impact</span>
-                  <p className="text-xs text-slate-600 dark:text-gray-400 mt-1">{item.value}</p>
+                <div className="pt-4 border-t border-slate-200 dark:border-cyber-gray/60 flex items-center justify-between">
+                  <div>
+                    <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">Business Impact</span>
+                    <p className="text-xs text-slate-600 dark:text-gray-400 mt-0.5">{item.value}</p>
+                  </div>
                 </div>
+                <button
+                  onClick={() => openBookingWithService(item.title)}
+                  className="mt-4 w-full py-2.5 px-4 bg-slate-100 dark:bg-cyber-dark hover:bg-brand-600 hover:text-white dark:hover:bg-cyber-blue dark:hover:text-cyber-dark border border-slate-200 dark:border-cyber-gray text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  <CalendarCheck size={14} />
+                  <span>Request This System</span>
+                </button>
               </div>
             ))}
           </div>
@@ -354,16 +384,24 @@ function App() {
           </p>
 
           <div className="flex flex-col items-center gap-6">
-            <a 
-              href={directEmailLink} 
-              className="inline-flex items-center gap-3 bg-brand-500 dark:bg-cyber-blue text-white dark:text-cyber-dark px-8 py-4 rounded-full font-bold text-lg hover:bg-brand-400 dark:hover:bg-white transition-all shadow-[0_0_20px_rgba(20,184,166,0.2)] dark:shadow-[0_0_20px_rgba(0,242,255,0.4)] group"
+            {/* Primary Action Button -> Opens CRM Booking Modal */}
+            <button 
+              onClick={() => openBookingWithService()}
+              className="inline-flex items-center gap-3 bg-brand-500 dark:bg-cyber-blue text-white dark:text-cyber-dark px-9 py-4 rounded-full font-bold text-lg hover:bg-brand-400 dark:hover:bg-white transition-all shadow-[0_0_25px_rgba(20,184,166,0.3)] dark:shadow-[0_0_25px_rgba(0,242,255,0.45)] hover:scale-105 cursor-pointer"
             >
-              <Mail size={20} className="group-hover:scale-110 transition-transform" />
-              <span>garciarobertrich@gmail.com</span>
-            </a>
+              <CalendarCheck size={22} />
+              <span>Book A System Consultation</span>
+            </button>
 
             {/* Direct Connect Buttons */}
             <div className="flex flex-wrap justify-center items-center gap-3 mt-2">
+              <a 
+                href={directEmailLink}
+                className="inline-flex items-center gap-2 bg-slate-800 text-slate-200 border border-slate-700 px-5 py-2.5 rounded-full font-semibold text-sm hover:border-brand-500 dark:hover:border-cyber-blue hover:text-white transition-all hover:scale-105 shadow-sm"
+              >
+                <Mail size={16} />
+                Email Me Directly
+              </a>
               <a 
                 href="https://wa.me/639175291018" 
                 target="_blank" 
