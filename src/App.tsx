@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowRight, BarChart3, Settings, TrendingUp, CheckCircle, ExternalLink, Mail, MapPin, Moon, Sun, Layers, Workflow, MessageSquare, PhoneCall, CalendarCheck } from 'lucide-react';
 import { BookingModal } from './components/BookingModal';
+import { AdminDashboard } from './components/AdminDashboard';
 
 const WhatsAppIcon = ({ size = 20, className = "" }: { size?: number; className?: string }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
@@ -15,9 +16,21 @@ const ViberIcon = ({ size = 20, className = "" }: { size?: number; className?: s
 );
 
 function App() {
+  const [isAdminRoute, setIsAdminRoute] = useState(
+    window.location.pathname.startsWith('/admin')
+  );
   const [isDark, setIsDark] = useState(true);
   const [isBookingOpen, setIsBookingOpen] = useState(false);
   const [selectedService, setSelectedService] = useState('Custom Business Management System');
+
+  useEffect(() => {
+    const handleLocationCheck = () => {
+      setIsAdminRoute(window.location.pathname.startsWith('/admin'));
+    };
+
+    window.addEventListener('popstate', handleLocationCheck);
+    return () => window.removeEventListener('popstate', handleLocationCheck);
+  }, []);
 
   useEffect(() => {
     if (isDark) {
@@ -26,6 +39,10 @@ function App() {
       document.documentElement.classList.remove('dark');
     }
   }, [isDark]);
+
+  if (isAdminRoute) {
+    return <AdminDashboard />;
+  }
 
   const toggleTheme = () => setIsDark(!isDark);
 
@@ -439,7 +456,12 @@ function App() {
 
       {/* Footer */}
       <footer className="py-8 bg-slate-950 dark:bg-cyber-dark text-slate-500 text-center border-t border-slate-800 dark:border-cyber-gray relative z-10 transition-colors duration-300">
-        <p>© {new Date().getFullYear()} Robert Rich Garcia. All rights reserved.</p>
+        <div className="flex flex-col sm:flex-row items-center justify-between max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-xs gap-4">
+          <p>© {new Date().getFullYear()} Robert Rich Garcia. All rights reserved.</p>
+          <a href="/admin" className="text-gray-600 hover:text-cyber-blue transition-colors font-mono">
+            Admin Console →
+          </a>
+        </div>
       </footer>
     </div>
   );
