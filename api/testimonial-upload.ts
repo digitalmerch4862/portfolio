@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import crypto from 'crypto';
-import { createAdminClient, isPortfolioAdmin } from '../server/testimonials';
+import { createAdminClient, isPortfolioAdmin } from '../server/testimonials.js';
 
 const TOKEN_PATTERN = /^[a-f0-9]{32}$/i;
 const FILE_TYPES: Record<string, { extension: string; kind: 'avatar' | 'video'; maxSize: number }> = {
