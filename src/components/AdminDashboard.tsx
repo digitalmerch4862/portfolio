@@ -111,6 +111,7 @@ export const AdminDashboard: React.FC = () => {
     client_email: '',
     company_name: '',
     service_type: 'Custom Business Management System',
+    custom_service_type: '',
     booking_id: '',
     notes: '',
   });
@@ -267,7 +268,20 @@ export const AdminDashboard: React.FC = () => {
       client_name: booking.name,
       client_email: booking.email,
       company_name: booking.company || '',
-      service_type: booking.service_type,
+      service_type: [
+        'Custom Business Management System',
+        'Business Process & Workflow Automation',
+        'Operations Dashboard & Reporting System',
+        'CRM & Lead Management Pipeline',
+        'Full-Stack Web App Development',
+      ].includes(booking.service_type) ? booking.service_type : 'Other',
+      custom_service_type: [
+        'Custom Business Management System',
+        'Business Process & Workflow Automation',
+        'Operations Dashboard & Reporting System',
+        'CRM & Lead Management Pipeline',
+        'Full-Stack Web App Development',
+      ].includes(booking.service_type) ? '' : booking.service_type,
       booking_id: booking.id,
       notes: `Requested for client ${booking.name}`,
     });
@@ -285,9 +299,18 @@ export const AdminDashboard: React.FC = () => {
       const res = await fetch('/api/send-testimonial-request', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${authData.session?.access_token || ''}` },
-        body: JSON.stringify(reqForm),
+        body: JSON.stringify({
+          ...reqForm,
+          service_type: reqForm.service_type === 'Other' ? reqForm.custom_service_type.trim() : reqForm.service_type,
+        }),
       });
-      const data = await res.json();
+      const responseText = await res.text();
+      let data: { success?: boolean; error?: string; reviewUrl?: string; emailSent?: boolean };
+      try {
+        data = JSON.parse(responseText);
+      } catch {
+        throw new Error(`Server returned an invalid response (${res.status}). Please try again later.`);
+      }
       if (data.success) {
         await navigator.clipboard.writeText(data.reviewUrl);
         alert(data.emailSent
@@ -300,6 +323,7 @@ export const AdminDashboard: React.FC = () => {
           client_email: '',
           company_name: '',
           service_type: 'Custom Business Management System',
+          custom_service_type: '',
           booking_id: '',
           notes: '',
         });
@@ -982,7 +1006,19 @@ export const AdminDashboard: React.FC = () => {
                   <option value="Operations Dashboard & Reporting System">Operations Dashboard & Reporting System</option>
                   <option value="CRM & Lead Management Pipeline">CRM & Lead Management Pipeline</option>
                   <option value="Full-Stack Web App Development">Full-Stack Web App Development</option>
+                  <option value="Other">Other</option>
                 </select>
+                {reqForm.service_type === 'Other' && (
+                  <input
+                    type="text"
+                    required
+                    maxLength={160}
+                    value={reqForm.custom_service_type}
+                    onChange={e => setReqForm(prev => ({ ...prev, custom_service_type: e.target.value }))}
+                    placeholder="Enter the service delivered"
+                    className="mt-2 w-full bg-[#141414] border border-cyber-gray text-white rounded-xl px-3.5 py-2.5 focus:outline-none focus:border-cyber-blue"
+                  />
+                )}
               </div>
 
               <div className="pt-4 flex justify-end gap-3">

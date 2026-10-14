@@ -30,7 +30,7 @@ export function escapeHtml(value) {
     '>': '&gt;',
     '"': '&quot;',
     "'": '&#39;',
-  })[character]!);
+  })[character]);
 }
 
 export const PORTFOLIO_URL = 'https://rrdgarcia.vercel.app';
