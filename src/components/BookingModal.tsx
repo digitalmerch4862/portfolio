@@ -1,6 +1,5 @@
 import React, { useState, useMemo } from 'react';
 import { X, Calendar, Clock, CheckCircle, ArrowRight, ArrowLeft, Loader2, Sparkles, Building2, User, Mail, Phone, Video, MessageSquare } from 'lucide-react';
-import { supabase, isSupabaseConfigured } from '../lib/supabase';
 
 interface BookingModalProps {
   isOpen: boolean;
@@ -25,6 +24,8 @@ export const BookingModal: React.FC<BookingModalProps> = ({
   const [submitted, setSubmitted] = useState(false);
   const [referenceId, setReferenceId] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const [adminNotificationSent, setAdminNotificationSent] = useState(false);
+  const [clientConfirmationSent, setClientConfirmationSent] = useState(false);
 
   // Generate 2 business weeks (10 weekdays: Monday - Friday)
   const availableDates = useMemo(() => {
@@ -93,60 +94,20 @@ export const BookingModal: React.FC<BookingModalProps> = ({
     setErrorMessage('');
 
     try {
-      // 1. Try sending to serverless API (which handles Supabase + Resend)
-      let apiSuccess = false;
-      try {
-        const response = await fetch('/api/book-consultation', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(formData),
-        });
-        const result = await response.json();
-        if (result?.success) {
-          apiSuccess = true;
-          setReferenceId(result.bookingId || `BK-${Date.now().toString(36).toUpperCase()}`);
-        }
-      } catch (apiErr) {
-        console.warn('API endpoint fallback to client-side Supabase:', apiErr);
-      }
-
-      // 2. Client-side Supabase Direct fallback if API not ready
-      if (!apiSuccess && isSupabaseConfigured && supabase) {
-        const { data, error } = await supabase
-          .from('consultation_bookings')
-          .insert([
-            {
-              name: formData.name,
-              email: formData.email,
-              phone: formData.phone || null,
-              company: formData.company || null,
-              service_type: formData.service_type,
-              bottleneck: formData.bottleneck || null,
-              current_tools: formData.current_tools || null,
-              preferred_date: formData.preferred_date || null,
-              preferred_time_slot: formData.preferred_time_slot,
-              meeting_platform: formData.meeting_platform,
-              status: 'pending',
-            }
-          ])
-          .select('id')
-          .single();
-
-        if (error) {
-          console.warn('Direct Supabase insert error:', error.message);
-        } else if (data?.id) {
-          setReferenceId(data.id);
-        }
-      }
-
-      if (!referenceId) {
-        setReferenceId(`BK-${Date.now().toString(36).toUpperCase()}`);
-      }
-
+      const response = await fetch('/api/book-consultation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+      const result = await response.json();
+      if (!response.ok || !result?.success) throw new Error(result?.error || 'Unable to submit this booking. Please try again.');
+      setReferenceId(result.bookingId || `BK-${Date.now().toString(36).toUpperCase()}`);
+      setAdminNotificationSent(Boolean(result.adminNotificationSent));
+      setClientConfirmationSent(Boolean(result.clientConfirmationSent));
       setSubmitted(true);
     } catch (err: any) {
       console.error('Booking submission error:', err);
-      setErrorMessage('Something went wrong submitting your booking. Please try again or reach out via WhatsApp/Email.');
+      setErrorMessage(err instanceof Error ? `${err.message} You can also contact me on Facebook.` : 'Something went wrong submitting your booking. Please try again or contact me on Facebook.');
     } finally {
       setLoading(false);
     }
@@ -156,6 +117,8 @@ export const BookingModal: React.FC<BookingModalProps> = ({
     setStep(1);
     setSubmitted(false);
     setReferenceId('');
+    setAdminNotificationSent(false);
+    setClientConfirmationSent(false);
     setErrorMessage('');
     onClose();
   };
@@ -272,7 +235,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 
                     <div>
                       <label className="block text-xs font-bold text-slate-700 dark:text-gray-300 uppercase tracking-wider mb-1.5">
-                        Phone / WhatsApp
+                        Phone Number
                       </label>
                       <div className="relative">
                         <Phone size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -463,7 +426,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                       3. Preferred Meeting Platform
                     </label>
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                      {['Google Meet', 'Zoom', 'WhatsApp Call', 'Direct Phone'].map(platform => (
+                      {['Google Meet', 'Zoom', 'Direct Phone'].map(platform => (
                         <button
                           key={platform}
                           type="button"
@@ -560,18 +523,18 @@ export const BookingModal: React.FC<BookingModalProps> = ({
               </div>
 
               <p className="text-xs text-slate-500 dark:text-gray-400 max-w-sm mx-auto">
-                A confirmation email has been dispatched to <strong>{formData.email}</strong>. Robert will contact you with the meeting link for your evening session.
+                Your booking has been received. {clientConfirmationSent ? <>A confirmation email was sent to <strong>{formData.email}</strong>.</> : <>We could not confirm delivery of the confirmation email.</>} {adminNotificationSent ? 'Robert was notified by email.' : 'Please also message Robert on Facebook to confirm the request.'}
               </p>
 
               <div className="pt-4 flex flex-col sm:flex-row justify-center gap-3">
                 <a
-                  href={`https://wa.me/639175291018?text=${encodeURIComponent(`Hi Robert! I just booked an evening consultation for ${formData.service_type} on ${formData.preferred_date} at ${formData.preferred_time_slot} (Ref: ${referenceId}). Looking forward to our call!`)}`}
+                  href="https://www.facebook.com/robert.rich.garcia/"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center gap-2 bg-emerald-600 text-white px-5 py-2.5 rounded-xl font-semibold text-xs hover:bg-emerald-700 transition-colors shadow-sm"
+                  className="inline-flex items-center justify-center gap-2 bg-blue-600 text-white px-5 py-2.5 rounded-xl font-semibold text-xs hover:bg-blue-700 transition-colors shadow-sm"
                 >
                   <MessageSquare size={16} />
-                  <span>Notify via WhatsApp</span>
+                  <span>Message Robert on Facebook</span>
                 </a>
                 <button
                   onClick={handleResetAndClose}

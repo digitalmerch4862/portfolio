@@ -21,18 +21,6 @@ import { BookingModal } from './components/BookingModal';
 import { AdminDashboard } from './components/AdminDashboard';
 import { ReviewPage } from './components/ReviewPage';
 
-const WhatsAppIcon = ({ size = 20, className = "" }: { size?: number; className?: string }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
-    <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.316 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.818-.981zm10.741-7.466c-.07-.117-.26-.187-.544-.328-.285-.141-1.688-.832-1.949-.927-.261-.094-.452-.141-.643.141-.191.282-.741.927-.909 1.115-.168.188-.337.212-.621.071-.284-.141-1.2-.442-2.285-1.409-.844-.752-1.414-1.681-1.58-1.963-.166-.282-.018-.435.123-.575.127-.126.284-.329.426-.493.142-.165.19-.282.285-.47.095-.188.047-.353-.024-.494-.071-.141-.643-1.551-.881-2.124-.231-.557-.468-.481-.643-.49-.166-.008-.356-.01-.545-.01-.19 0-.498.071-.759.353-.261.282-1.002.979-1.002 2.388 0 1.41 1.026 2.771 1.168 2.96.143.188 2.019 3.084 4.891 4.325.683.295 1.217.471 1.633.603.687.218 1.312.187 1.807.114.551-.082 1.688-.69 1.926-1.356.237-.666.237-1.237.166-1.356z"/>
-  </svg>
-);
-
-const ViberIcon = ({ size = 20, className = "" }: { size?: number; className?: string }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
-    <path d="M19.78 3.52C17.65 1.54 14.73.57 11.75.57c-6.19 0-11.2 4.7-11.2 10.5 0 3.23 1.53 6.13 3.99 8.08v3.52l3.41-1.87c1.19.33 2.45.51 3.75.51 6.19 0 11.2-4.7 11.2-10.5 0-2.82-1.12-5.46-3.12-7.27zm-1.07 13.1c-.24.71-1.39 1.34-1.95 1.38-.52.04-1.17.06-3.74-.99-3.1-1.26-5.1-4.42-5.26-4.63-.15-.2-1.26-1.68-1.26-3.21 0-1.53.8-2.28 1.09-2.59.29-.31.63-.39.84-.39.21 0 .42 0 .61.01.2.01.47-.08.73.56.27.65.91 2.23.99 2.4.08.17.13.37.03.58-.11.21-.16.34-.32.53-.16.19-.34.42-.48.56-.16.16-.33.34-.14.67.19.33.85 1.4 1.82 2.27 1.25 1.11 2.3 1.46 2.63 1.62.33.17.52.14.72-.08.19-.23.82-.96 1.04-1.29.22-.33.44-.27.74-.16.3.11 1.91.9 2.24 1.06.33.17.55.25.63.39.08.14.08.82-.16 1.53z"/>
-  </svg>
-);
-
 type PublicTestimonial = {
   id: string;
   client_name: string;
@@ -459,11 +447,8 @@ function App() {
                   </div>
                   <div className="flex items-center gap-2 pt-1">
                     <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-gray-400 mr-1">Direct Channels:</span>
-                    <a href="https://wa.me/639175291018" target="_blank" rel="noopener noreferrer" className="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 text-emerald-600 dark:text-emerald-400 hover:scale-110 transition-transform shadow-sm" title="WhatsApp Message">
-                      <WhatsAppIcon size={16} />
-                    </a>
-                    <a href="viber://chat?number=%2B639175291018" className="p-2 rounded-lg bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800/60 text-purple-600 dark:text-purple-400 hover:scale-110 transition-transform shadow-sm" title="Viber Chat">
-                      <ViberIcon size={16} />
+                    <a href="https://www.facebook.com/robert.rich.garcia/" target="_blank" rel="noopener noreferrer" className="p-2 rounded-lg bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/60 text-blue-600 dark:text-blue-400 hover:scale-110 transition-transform shadow-sm" title="Message me on Facebook">
+                      <span className="font-extrabold text-base leading-none">f</span>
                     </a>
                     <a href="sms:+639175291018" className="p-2 rounded-lg bg-slate-100 dark:bg-cyber-dark border border-slate-200 dark:border-cyber-gray text-brand-600 dark:text-cyber-blue hover:scale-110 transition-transform shadow-sm" title="Send SMS">
                       <MessageSquare size={16} />
@@ -542,20 +527,13 @@ function App() {
                 Email Me Directly
               </a>
               <a
-                href="https://wa.me/639175291018"
+                href="https://www.facebook.com/robert.rich.garcia/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 bg-emerald-600/10 border border-emerald-500/30 text-emerald-400 px-5 py-2.5 rounded-full font-semibold text-sm hover:bg-emerald-600 hover:text-white transition-all hover:scale-105 shadow-sm"
+                className="inline-flex items-center gap-2 bg-blue-600/10 border border-blue-500/30 text-blue-400 px-5 py-2.5 rounded-full font-semibold text-sm hover:bg-blue-600 hover:text-white transition-all hover:scale-105 shadow-sm"
               >
-                <WhatsAppIcon size={18} />
-                WhatsApp
-              </a>
-              <a
-                href="viber://chat?number=%2B639175291018"
-                className="inline-flex items-center gap-2 bg-purple-600/10 border border-purple-500/30 text-purple-400 px-5 py-2.5 rounded-full font-semibold text-sm hover:bg-purple-600 hover:text-white transition-all hover:scale-105 shadow-sm"
-              >
-                <ViberIcon size={18} />
-                Viber Chat
+                <span className="font-extrabold text-lg leading-none">f</span>
+                Message me on Facebook
               </a>
               <a
                 href="sms:+639175291018"
