@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import { TurnstileCaptcha } from './TurnstileCaptcha';
 import { 
   ShieldAlert, 
   LogOut, 
@@ -85,8 +84,6 @@ export const AdminDashboard: React.FC = () => {
   const [loadingAuth, setLoadingAuth] = useState(true);
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
-  const [captchaToken, setCaptchaToken] = useState('');
-  const [captchaResetKey, setCaptchaResetKey] = useState(0);
   const [authMessage, setAuthMessage] = useState('');
   const [authBusy, setAuthBusy] = useState(false);
   const [isPasswordReset, setIsPasswordReset] = useState(false);
@@ -204,40 +201,31 @@ export const AdminDashboard: React.FC = () => {
     }
   }, [isAuthorized]);
 
-  // Password login and recovery both require a Supabase-verified CAPTCHA token.
+  // Password login and recovery.
   const handlePasswordSignIn = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!supabase || !captchaToken) {
-      setAuthMessage('Complete the CAPTCHA first.');
-      return;
-    }
+    if (!supabase) return;
     setAuthBusy(true);
     setAuthMessage('');
     const { error } = await supabase.auth.signInWithPassword({
       email: loginEmail.trim(),
       password: loginPassword,
-      options: { captchaToken },
     });
     setAuthBusy(false);
-    setCaptchaToken('');
-    setCaptchaResetKey((key) => key + 1);
     if (error) setAuthMessage(error.message);
   };
 
   const handlePasswordReset = async () => {
-    if (!supabase || !captchaToken || !loginEmail.trim()) {
-      setAuthMessage('Enter your email and complete the CAPTCHA first.');
+    if (!supabase || !loginEmail.trim()) {
+      setAuthMessage('Enter your email address first.');
       return;
     }
     setAuthBusy(true);
     setAuthMessage('');
     const { error } = await supabase.auth.resetPasswordForEmail(loginEmail.trim(), {
       redirectTo: `${window.location.origin}/admin2`,
-      captchaToken,
     });
     setAuthBusy(false);
-    setCaptchaToken('');
-    setCaptchaResetKey((key) => key + 1);
     setAuthMessage(error ? error.message : 'If this email is registered, a password reset link has been sent.');
   };
 
@@ -510,16 +498,14 @@ export const AdminDashboard: React.FC = () => {
             {!isPasswordReset && <label className="block text-xs font-medium text-gray-300">Password
               <input type="password" autoComplete="current-password" required value={loginPassword} onChange={(event) => setLoginPassword(event.target.value)} className="mt-1.5 w-full rounded-xl border border-cyber-gray bg-black px-4 py-3 text-sm text-white outline-none focus:border-cyber-blue" />
             </label>}
-            <TurnstileCaptcha key={captchaResetKey} siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY || ''} onToken={setCaptchaToken} />
-            {!import.meta.env.VITE_TURNSTILE_SITE_KEY && <p className="text-xs text-amber-300">CAPTCHA is not configured yet. Add the Turnstile site key to the app and the secret key to Supabase Auth.</p>}
             {authMessage && <p role="status" className="text-xs text-gray-300">{authMessage}</p>}
             {isPasswordReset ? (
-              <button type="button" disabled={authBusy || !captchaToken || !loginEmail.trim() || !import.meta.env.VITE_TURNSTILE_SITE_KEY} onClick={handlePasswordReset} className="w-full rounded-xl bg-cyber-blue px-5 py-3 font-bold text-sm text-black disabled:opacity-50">{authBusy ? 'Sending…' : 'Send password reset link'}</button>
+              <button type="button" disabled={authBusy || !loginEmail.trim()} onClick={handlePasswordReset} className="w-full rounded-xl bg-cyber-blue px-5 py-3 font-bold text-sm text-black disabled:opacity-50">{authBusy ? 'Sending…' : 'Send password reset link'}</button>
             ) : (
-              <button type="submit" disabled={authBusy || !captchaToken || !import.meta.env.VITE_TURNSTILE_SITE_KEY} className="w-full rounded-xl bg-cyber-blue px-5 py-3 font-bold text-sm text-black disabled:opacity-50">{authBusy ? 'Signing in…' : 'Sign in'}</button>
+              <button type="submit" disabled={authBusy} className="w-full rounded-xl bg-cyber-blue px-5 py-3 font-bold text-sm text-black disabled:opacity-50">{authBusy ? 'Signing in…' : 'Sign in'}</button>
             )}
           </form>
-          <button type="button" onClick={() => { setIsPasswordReset(!isPasswordReset); setAuthMessage(''); setCaptchaToken(''); }} className="mt-4 text-xs text-gray-400 hover:text-cyber-blue">
+          <button type="button" onClick={() => { setIsPasswordReset(!isPasswordReset); setAuthMessage(''); }} className="mt-4 text-xs text-gray-400 hover:text-cyber-blue">
             {isPasswordReset ? 'Back to sign in' : 'Forgot password?'}
           </button>
 
