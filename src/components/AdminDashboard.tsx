@@ -31,7 +31,8 @@ import {
   Copy,
   Trash2,
   Eye,
-  EyeOff
+  EyeOff,
+  UploadCloud
 } from 'lucide-react';
 
 const ALLOWED_ADMIN_EMAIL = 'digitalmerch4862@gmail.com';
@@ -63,10 +64,15 @@ export interface TestimonialRecord {
   company_name: string | null;
   client_email: string;
   avatar_url: string | null;
+  avatar_display_url?: string | null;
   service_type: string;
   problem_solved: string | null;
   measurable_result: string | null;
   testimonial_text: string | null;
+  testimonial_type: 'text' | 'video';
+  video_url: string | null;
+  video_display_url?: string | null;
+  consent_at: string | null;
   rating: number;
   status: 'requested' | 'submitted' | 'approved' | 'rejected';
   is_featured: boolean;
@@ -158,7 +164,22 @@ export const AdminDashboard: React.FC = () => {
         .order('created_at', { ascending: false });
 
       if (error) console.error('Error fetching testimonials:', error.message);
-      else setTestimonials(data || []);
+      else {
+        const records = data || [];
+        const paths = [...new Set(records.flatMap((item) => [item.avatar_url, item.video_url]).filter((path): path is string => Boolean(path)))];
+        const { data: authData } = await supabase.auth.getSession();
+        const mediaResponse = paths.length ? await fetch('/api/admin-testimonial-media', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${authData.session?.access_token || ''}` },
+          body: JSON.stringify({ paths }),
+        }) : null;
+        const mediaResult = mediaResponse?.ok ? await mediaResponse.json() : { urls: {} };
+        setTestimonials(records.map((item) => ({
+          ...item,
+          avatar_display_url: item.avatar_url ? mediaResult.urls?.[item.avatar_url] || null : null,
+          video_display_url: item.video_url ? mediaResult.urls?.[item.video_url] || null : null,
+        })));
+      }
     } catch (err) {
       console.error('Failed to load testimonials:', err);
     } finally {
@@ -254,14 +275,18 @@ export const AdminDashboard: React.FC = () => {
 
     setSendingRequest(true);
     try {
+      const { data: authData } = await supabase.auth.getSession();
       const res = await fetch('/api/send-testimonial-request', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${authData.session?.access_token || ''}` },
         body: JSON.stringify(reqForm),
       });
       const data = await res.json();
       if (data.success) {
-        alert(`Testimonial request successfully dispatched to ${reqForm.client_email}!`);
+        await navigator.clipboard.writeText(data.reviewUrl);
+        alert(data.emailSent
+          ? `Survey link emailed to ${reqForm.client_email} and copied to your clipboard.`
+          : `Invitation created and survey link copied to clipboard. Email is not configured, so send this link to ${reqForm.client_email} yourself.`);
         setIsRequestModalOpen(false);
         fetchTestimonials();
         setReqForm({
@@ -286,8 +311,8 @@ export const AdminDashboard: React.FC = () => {
   // Toggle Feature on Portfolio
   const handleToggleFeatured = async (item: TestimonialRecord) => {
     if (!supabase) return;
-    if (item.rating < 4) {
-      alert("🔒 1 to 3-star reviews are strictly for your internal eyes only and cannot be featured publicly on your portfolio.");
+    if (item.rating < 4 && !item.is_featured) {
+      alert("Ratings below 4 stars stay private and cannot be featured.");
       return;
     }
     const newFeatured = !item.is_featured;
@@ -304,6 +329,35 @@ export const AdminDashboard: React.FC = () => {
       }
     } catch (err) {
       console.error('Error toggling featured status:', err);
+    }
+  };
+
+  const handleUploadClientPhoto = async (item: TestimonialRecord, file: File) => {
+    try {
+      const { data: authData } = await supabase.auth.getSession();
+      const response = await fetch('/api/testimonial-upload', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${authData.session?.access_token || ''}` },
+        body: JSON.stringify({ kind: 'adminAvatar', content_type: file.type, size: file.size }),
+      });
+      const result = await response.json();
+      if (!response.ok || !result.success) throw new Error(result.error || 'Could not prepare photo upload.');
+      const { error: uploadError } = await supabase.storage.from('testimonial-media')
+        .uploadToSignedUrl(result.path, result.uploadToken, file, { contentType: file.type });
+      if (uploadError) throw uploadError;
+      const signedResponse = await fetch('/api/admin-testimonial-media', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${authData.session?.access_token || ''}` },
+        body: JSON.stringify({ paths: [result.path] }),
+      });
+      const signedResult = await signedResponse.json();
+      if (!signedResponse.ok || !signedResult.success) throw new Error(signedResult.error || 'Could not preview uploaded photo.');
+      const { error: updateError } = await supabase.from('client_testimonials').update({ avatar_url: result.path }).eq('id', item.id);
+      if (updateError) throw updateError;
+      setTestimonials((previous) => previous.map((testimonial) => testimonial.id === item.id ? { ...testimonial, avatar_url: result.path, avatar_display_url: signedResult.urls?.[result.path] || null } : testimonial));
+    } catch (error) {
+      console.error('Could not add client photo:', error);
+      alert(error instanceof Error ? error.message : 'Could not upload client photo.');
     }
   };
 
@@ -744,7 +798,7 @@ export const AdminDashboard: React.FC = () => {
                             {t.status}
                           </span>
 
-                          {t.rating <= 3 && t.status === 'submitted' && (
+                          {t.rating <= 3 && t.status !== 'requested' && (
                             <span className="text-[10px] uppercase font-mono px-2.5 py-0.5 rounded-full font-bold bg-rose-950/40 border border-rose-800 text-rose-400 flex items-center gap-1">
                               🔒 Private Internal (Eyes Only)
                             </span>
@@ -780,6 +834,7 @@ export const AdminDashboard: React.FC = () => {
                       </div>
 
                       {/* Testimonial Quote */}
+                      {t.video_display_url && <video controls preload="metadata" src={t.video_display_url} className="w-full rounded-xl mb-3 bg-black" />}
                       {t.testimonial_text ? (
                         <div className="bg-[#141414] p-3.5 rounded-xl border border-cyber-gray/80 text-xs text-gray-200 italic mb-3 leading-relaxed">
                           "{t.testimonial_text}"
@@ -789,6 +844,16 @@ export const AdminDashboard: React.FC = () => {
                           Feedback link dispatched. Awaiting client submission.
                         </div>
                       )}
+
+                      <div className="mb-3">
+                        <label className="inline-flex items-center gap-2 text-xs text-gray-400 cursor-pointer hover:text-cyber-blue">
+                          <UploadCloud size={14} /> {t.avatar_url ? 'Replace client photo' : 'Add client photo'}
+                          <input type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" onChange={(event) => { const file = event.target.files?.[0]; if (file) void handleUploadClientPhoto(t, file); event.currentTarget.value = ''; }} />
+                        </label>
+                      </div>
+
+                      {t.problem_solved && <div className="text-xs text-gray-300 mb-2"><strong>Service fit:</strong> {t.problem_solved}</div>}
+                      {t.measurable_result && <div className="text-xs text-gray-300 mb-3"><strong>Outcome:</strong> {t.measurable_result}</div>}
 
                       {/* Measurable Result / Problem */}
                       {t.measurable_result && (
@@ -803,7 +868,7 @@ export const AdminDashboard: React.FC = () => {
                       {/* Feature on Portfolio Toggle */}
                       <button
                         onClick={() => handleToggleFeatured(t)}
-                        disabled={!t.testimonial_text}
+                        disabled={t.rating < 4 || (!t.testimonial_text && !t.video_url)}
                         className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold transition-all cursor-pointer ${
                           t.is_featured
                             ? 'bg-cyber-blue text-cyber-dark hover:bg-white shadow-[0_0_10px_rgba(0,242,255,0.4)]'
