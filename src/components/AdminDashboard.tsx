@@ -295,15 +295,32 @@ export const AdminDashboard: React.FC = () => {
 
     setSendingRequest(true);
     try {
-      const { data: authData } = await supabase.auth.getSession();
-      const res = await fetch('/api/send-testimonial-request', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${authData.session?.access_token || ''}` },
-        body: JSON.stringify({
-          ...reqForm,
-          service_type: reqForm.service_type === 'Other' ? reqForm.custom_service_type.trim() : reqForm.service_type,
-        }),
+      const requestBody = JSON.stringify({
+        ...reqForm,
+        service_type: reqForm.service_type === 'Other' ? reqForm.custom_service_type.trim() : reqForm.service_type,
       });
+      const sendRequest = (accessToken: string) => fetch('/api/send-testimonial-request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
+        body: requestBody,
+      });
+
+      let { data: authData, error: authError } = await supabase.auth.getSession();
+      if (authError) throw new Error('Could not verify your admin session. Please sign in again.');
+      let res = await sendRequest(authData.session?.access_token || '');
+
+      // A session can expire while the admin page stays open. A 401 is returned
+      // before the API creates an invitation, so refreshing and retrying is safe.
+      if (res.status === 401) {
+        const refreshed = await supabase.auth.refreshSession();
+        if (refreshed.error || !refreshed.data.session?.access_token) {
+          throw new Error('Your admin session expired. Sign in again, then resend the request.');
+        }
+        if (refreshed.data.session.user.email?.toLowerCase() !== ALLOWED_ADMIN_EMAIL.toLowerCase()) {
+          throw new Error('Sign in with the authorized admin account to send testimonial requests.');
+        }
+        res = await sendRequest(refreshed.data.session.access_token);
+      }
       const responseText = await res.text();
       let data: { success?: boolean; error?: string; reviewUrl?: string; emailSent?: boolean };
       try {
