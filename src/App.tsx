@@ -39,7 +39,7 @@ function App() {
   const [isAdminRoute, setIsAdminRoute] = useState(currentPath === '/admin2' || currentPath.startsWith('/admin2/'));
   const [isReviewRoute, setIsReviewRoute] = useState(currentPath.startsWith('/review'));
 
-  const [isDark, setIsDark] = useState(true);
+  const [isDark, setIsDark] = useState(() => localStorage.getItem('portfolio-theme') === 'dark');
   const [isBookingOpen, setIsBookingOpen] = useState(false);
   const [selectedService, setSelectedService] = useState('Custom Business Management System');
   const [featuredTestimonials, setFeaturedTestimonials] = useState<PublicTestimonial[]>([]);
@@ -85,7 +85,11 @@ function App() {
     return <ReviewPage />;
   }
 
-  const toggleTheme = () => setIsDark(!isDark);
+  const toggleTheme = () => {
+    const nextIsDark = !isDark;
+    localStorage.setItem('portfolio-theme', nextIsDark ? 'dark' : 'light');
+    setIsDark(nextIsDark);
+  };
 
   const openBookingWithService = (serviceName?: string) => {
     if (serviceName) setSelectedService(serviceName);
