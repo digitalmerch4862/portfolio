@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
+import { TurnstileCaptcha } from './TurnstileCaptcha';
 import { 
   ShieldAlert, 
   LogOut, 
@@ -82,6 +83,15 @@ export interface TestimonialRecord {
 export const AdminDashboard: React.FC = () => {
   const [session, setSession] = useState<any>(null);
   const [loadingAuth, setLoadingAuth] = useState(true);
+  const [loginEmail, setLoginEmail] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
+  const [captchaToken, setCaptchaToken] = useState('');
+  const [captchaResetKey, setCaptchaResetKey] = useState(0);
+  const [authMessage, setAuthMessage] = useState('');
+  const [authBusy, setAuthBusy] = useState(false);
+  const [isPasswordReset, setIsPasswordReset] = useState(false);
+  const [isRecoverySession, setIsRecoverySession] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
   const [activeTab, setActiveTab] = useState<'bookings' | 'testimonials'>('bookings');
   
   // Bookings Data
@@ -123,8 +133,9 @@ export const AdminDashboard: React.FC = () => {
       setLoadingAuth(false);
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session);
+      if (event === 'PASSWORD_RECOVERY') setIsRecoverySession(true);
       setLoadingAuth(false);
     });
 
@@ -193,15 +204,51 @@ export const AdminDashboard: React.FC = () => {
     }
   }, [isAuthorized]);
 
-  // Google Login / Logout
-  const handleGoogleSignIn = async () => {
-    if (!supabase) return;
-    await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: window.location.origin + '/admin2',
-      },
+  // Password login and recovery both require a Supabase-verified CAPTCHA token.
+  const handlePasswordSignIn = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!supabase || !captchaToken) {
+      setAuthMessage('Complete the CAPTCHA first.');
+      return;
+    }
+    setAuthBusy(true);
+    setAuthMessage('');
+    const { error } = await supabase.auth.signInWithPassword({
+      email: loginEmail.trim(),
+      password: loginPassword,
+      options: { captchaToken },
     });
+    setAuthBusy(false);
+    setCaptchaToken('');
+    setCaptchaResetKey((key) => key + 1);
+    if (error) setAuthMessage(error.message);
+  };
+
+  const handlePasswordReset = async () => {
+    if (!supabase || !captchaToken || !loginEmail.trim()) {
+      setAuthMessage('Enter your email and complete the CAPTCHA first.');
+      return;
+    }
+    setAuthBusy(true);
+    setAuthMessage('');
+    const { error } = await supabase.auth.resetPasswordForEmail(loginEmail.trim(), {
+      redirectTo: `${window.location.origin}/admin2`,
+      captchaToken,
+    });
+    setAuthBusy(false);
+    setCaptchaToken('');
+    setCaptchaResetKey((key) => key + 1);
+    setAuthMessage(error ? error.message : 'If this email is registered, a password reset link has been sent.');
+  };
+
+  const handleSetNewPassword = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!supabase) return;
+    setAuthBusy(true);
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    setAuthBusy(false);
+    setAuthMessage(error ? error.message : 'Password updated. You are now signed in.');
+    if (!error) setIsRecoverySession(false);
   };
 
   const handleSignOut = async () => {
@@ -435,22 +482,45 @@ export const AdminDashboard: React.FC = () => {
   }
 
   // Not Signed In Screen
+  if (isRecoverySession) {
+    return (
+      <div className="min-h-screen bg-[#050505] text-white flex items-center justify-center p-4 font-sans">
+        <form onSubmit={handleSetNewPassword} className="w-full max-w-md space-y-4 rounded-3xl border border-cyber-gray bg-[#0d0d0d] p-8 neon-border">
+          <h1 className="text-xl font-semibold">Set your new password</h1>
+          <label className="block text-xs font-medium text-gray-300">New password
+            <input type="password" autoComplete="new-password" minLength={12} required value={newPassword} onChange={(event) => setNewPassword(event.target.value)} className="mt-1.5 w-full rounded-xl border border-cyber-gray bg-black px-4 py-3 text-sm text-white outline-none focus:border-cyber-blue" />
+          </label>
+          {authMessage && <p role="status" className="text-xs text-gray-300">{authMessage}</p>}
+          <button disabled={authBusy} className="w-full rounded-xl bg-cyber-blue px-5 py-3 font-bold text-sm text-black disabled:opacity-50">{authBusy ? 'Updating…' : 'Update password'}</button>
+        </form>
+      </div>
+    );
+  }
+
   if (!session) {
     return (
       <div className="min-h-screen bg-[#050505] text-white flex flex-col justify-center items-center p-4 relative font-sans">
         <div className="fixed inset-0 cyber-grid z-0 pointer-events-none opacity-40"></div>
         <div className="relative z-10 w-full max-w-md bg-[#0d0d0d] border border-cyber-gray p-8 rounded-3xl shadow-2xl text-center neon-border">
-          <button
-            onClick={handleGoogleSignIn}
-            className="w-full flex items-center justify-center gap-3 bg-white hover:bg-gray-100 text-slate-900 py-3.5 px-6 rounded-xl font-bold text-sm transition-all hover:scale-102 shadow-lg cursor-pointer"
-          >
-            <svg className="w-5 h-5" viewBox="0 0 24 24">
-              <path fill="#EA4335" d="M12 5c1.6 0 3 .6 4.1 1.7l3.1-3.1C17.3 1.8 14.8 1 12 1 7.5 1 3.7 3.6 1.9 7.3l3.7 2.9C6.5 7.4 9 5 12 5z" />
-              <path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.8z" />
-              <path fill="#FBBC05" d="M5.6 14.8c-.2-.7-.4-1.5-.4-2.3 0-.8.2-1.6.4-2.3L1.9 7.3C.7 9.7 0 12 0 14.5s.7 4.8 1.9 7.2l3.7-2.9z" />
-              <path fill="#34A853" d="M12 23.5c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.8-2.5 1.2-4.3 1.2-3 0-5.5-2.4-6.4-5.2L1.9 16.5C3.7 20.2 7.5 23.5 12 23.5z" />
-            </svg>
-            <span>Sign In with Google</span>
+          <h1 className="text-xl font-semibold text-white mb-6">{isPasswordReset ? 'Reset password' : 'Admin sign in'}</h1>
+          <form onSubmit={handlePasswordSignIn} className="space-y-4 text-left">
+            <label className="block text-xs font-medium text-gray-300">Email
+              <input type="email" autoComplete="username" required value={loginEmail} onChange={(event) => setLoginEmail(event.target.value)} className="mt-1.5 w-full rounded-xl border border-cyber-gray bg-black px-4 py-3 text-sm text-white outline-none focus:border-cyber-blue" />
+            </label>
+            {!isPasswordReset && <label className="block text-xs font-medium text-gray-300">Password
+              <input type="password" autoComplete="current-password" required value={loginPassword} onChange={(event) => setLoginPassword(event.target.value)} className="mt-1.5 w-full rounded-xl border border-cyber-gray bg-black px-4 py-3 text-sm text-white outline-none focus:border-cyber-blue" />
+            </label>}
+            <TurnstileCaptcha key={captchaResetKey} siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY || ''} onToken={setCaptchaToken} />
+            {!import.meta.env.VITE_TURNSTILE_SITE_KEY && <p className="text-xs text-amber-300">CAPTCHA is not configured yet. Add the Turnstile site key to the app and the secret key to Supabase Auth.</p>}
+            {authMessage && <p role="status" className="text-xs text-gray-300">{authMessage}</p>}
+            {isPasswordReset ? (
+              <button type="button" disabled={authBusy || !captchaToken || !loginEmail.trim() || !import.meta.env.VITE_TURNSTILE_SITE_KEY} onClick={handlePasswordReset} className="w-full rounded-xl bg-cyber-blue px-5 py-3 font-bold text-sm text-black disabled:opacity-50">{authBusy ? 'Sending…' : 'Send password reset link'}</button>
+            ) : (
+              <button type="submit" disabled={authBusy || !captchaToken || !import.meta.env.VITE_TURNSTILE_SITE_KEY} className="w-full rounded-xl bg-cyber-blue px-5 py-3 font-bold text-sm text-black disabled:opacity-50">{authBusy ? 'Signing in…' : 'Sign in'}</button>
+            )}
+          </form>
+          <button type="button" onClick={() => { setIsPasswordReset(!isPasswordReset); setAuthMessage(''); setCaptchaToken(''); }} className="mt-4 text-xs text-gray-400 hover:text-cyber-blue">
+            {isPasswordReset ? 'Back to sign in' : 'Forgot password?'}
           </button>
 
           <div className="mt-8 pt-6 border-t border-cyber-gray/60">
