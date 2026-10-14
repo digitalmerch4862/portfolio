@@ -20,6 +20,22 @@ export function createAdminClient() {
   return createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
 }
 
+export async function invokeTestimonialPortal(action, values = {}, authorization = '') {
+  const url = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || DEFAULT_SUPABASE_URL;
+  const key = process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || DEFAULT_SUPABASE_PUBLISHABLE_KEY;
+  const response = await fetch(`${url}/functions/v1/testimonial-portal`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      apikey: key,
+      ...(authorization ? { Authorization: authorization } : {}),
+    },
+    body: JSON.stringify({ action, ...values }),
+  });
+  const result = await response.json().catch(() => ({ success: false, error: 'Invalid response from testimonial service.' }));
+  return { status: response.status, result };
+}
+
 export async function isPortfolioAdmin(req) {
   const authorization = req.headers.authorization;
   if (!authorization?.startsWith('Bearer ')) return false;

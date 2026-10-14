@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { Resend } from 'resend';
-import { createAdminClient, escapeHtml } from '../server/testimonials.js';
+import { escapeHtml, invokeTestimonialPortal } from '../server/testimonials.js';
 
 const TOKEN_PATTERN = /^[a-f0-9]{32}$/i;
 const mediaPathIsValid = (value: unknown, token: string, kind: 'avatar' | 'video') => {
@@ -22,37 +22,24 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (avatarUrl && !mediaPathIsValid(avatarUrl, String(token), 'avatar')) return res.status(400).json({ success: false, error: 'Please upload a profile photo using this form.' });
 
   try {
-    const supabase = createAdminClient();
-    const { data: invitation, error: lookupError } = await supabase.from('client_testimonials')
-      .select('id, client_name, client_role, company_name, client_email, service_type, status, token')
-      .eq('token', token).eq('status', 'requested').maybeSingle();
-    if (lookupError || !invitation) return res.status(404).json({ success: false, error: 'This invitation is invalid or has already been used.' });
-
-    const isPublic = score >= 4;
-    const text = `Communication: ${answers.communication.trim()}\nWork quality: ${answers.quality.trim()}\nFit for our needs: ${answers.fit.trim()}\nResult: ${answers.result.trim()}`;
-    const { data, error } = await supabase.from('client_testimonials').update({
+    const { status, result } = await invokeTestimonialPortal('submit', {
+      token,
       rating: score,
+      public_consent: publicConsent,
       testimonial_type: type,
-      testimonial_text: text,
-      video_url: type === 'video' ? videoUrl : null,
-      avatar_url: avatarUrl || null,
-      problem_solved: answers.fit.trim(),
-      measurable_result: answers.result.trim(),
-      status: isPublic ? 'approved' : 'submitted',
-      is_featured: isPublic,
-      consent_at: new Date().toISOString(),
-      submitted_at: new Date().toISOString(),
-      client_role: invitation.client_role,
-      company_name: invitation.company_name,
-    }).eq('id', invitation.id).eq('status', 'requested').select('id').maybeSingle();
-    if (error) throw error;
-    if (!data) return res.status(409).json({ success: false, error: 'This invitation has already been submitted.' });
+      avatar_url: avatarUrl,
+      video_url: videoUrl,
+      survey_answers: answers,
+    });
+    if (status !== 200 || !result.success) return res.status(status).json(result);
+    const isPublic = Boolean(result.public);
+    const invitation = result.invitation;
 
     if (process.env.RESEND_API_KEY) {
       try {
         const resend = new Resend(process.env.RESEND_API_KEY);
         await resend.emails.send({
-          from: process.env.RESEND_FROM_EMAIL || 'Robert Rich Garcia <consultations@dmerch.store>',
+          from: process.env.RESEND_FROM_EMAIL || 'DMerch <consultations@dmerch.store>',
           to: process.env.ADMIN_NOTIFICATION_EMAIL || 'garciarobertrich@gmail.com',
           subject: `Client survey received: ${invitation.client_name} (${score}/5)`,
           html: `<h2>Client feedback received</h2><p><strong>${escapeHtml(invitation.client_name)}</strong> · ${escapeHtml(invitation.service_type)} · ${score}/5</p><ul><li>Communication: ${escapeHtml(answers.communication)}</li><li>Work quality: ${escapeHtml(answers.quality)}</li><li>Fit: ${escapeHtml(answers.fit)}</li><li>Result: ${escapeHtml(answers.result)}</li></ul><p>${type === 'video' ? 'Video testimonial attached to the admin record.' : 'Written survey response'}</p><p>${isPublic ? 'Client permitted publication and this 4–5 star response is live.' : 'Private feedback only (rating below 4 stars).'}</p><p><a href="https://rrdgarcia.vercel.app/admin2">Open testimonial dashboard</a></p>`,

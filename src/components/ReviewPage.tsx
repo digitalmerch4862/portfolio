@@ -32,8 +32,12 @@ export const ReviewPage: React.FC = () => {
     }
     fetch(`/api/testimonial?token=${encodeURIComponent(reviewToken)}`)
       .then(async (response) => {
-        const result = await response.json();
-        if (!response.ok || !result.success) throw new Error('This invitation link is invalid or has already expired.');
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok || !result.success) {
+          throw new Error(response.status === 404
+            ? 'This invitation link is invalid or has already expired.'
+            : result.error || 'We couldn’t load this invitation right now. Please try again shortly.');
+        }
         setInvitation(result.data);
       })
       .catch((requestError) => setError(requestError.message || 'Unable to load this invitation.'))

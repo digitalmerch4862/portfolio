@@ -1,6 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import crypto from 'crypto';
-import { createAdminClient, isPortfolioAdmin } from '../server/testimonials.js';
+import { invokeTestimonialPortal, isPortfolioAdmin } from '../server/testimonials.js';
 
 const TOKEN_PATTERN = /^[a-f0-9]{32}$/i;
 const FILE_TYPES: Record<string, { extension: string; kind: 'avatar' | 'video'; maxSize: number }> = {
@@ -32,24 +31,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    const supabase = createAdminClient();
-    if (!adminUpload) {
-      const { data: invitation, error } = await supabase
-        .from('client_testimonials')
-        .select('id')
-        .eq('token', token)
-        .eq('status', 'requested')
-        .maybeSingle();
-      if (error || !invitation) return res.status(404).json({ success: false, error: 'Invitation not found.' });
-    }
-
-    const path = adminUpload
-      ? `admin/${crypto.randomUUID()}.${type.extension}`
-      : `${token}/${kind}-${crypto.randomUUID()}.${type.extension}`;
-    const { data, error } = await supabase.storage.from('testimonial-media').createSignedUploadUrl(path);
-    if (error || !data) throw error || new Error('Could not create an upload link.');
-
-    return res.status(200).json({ success: true, path, uploadToken: data.token });
+    const { status, result } = await invokeTestimonialPortal('prepare-upload', {
+      token,
+      kind,
+      content_type: contentType,
+      size,
+    }, req.headers.authorization || '');
+    return res.status(status).json(result);
   } catch (error) {
     console.error('Could not create testimonial upload link:', error);
     return res.status(500).json({ success: false, error: 'Unable to prepare this upload.' });
