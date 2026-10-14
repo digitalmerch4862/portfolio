@@ -80,7 +80,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // 2. Resend Automated Emails
     const resendApiKey = process.env.RESEND_API_KEY;
     const fromEmail = process.env.RESEND_FROM_EMAIL || 'Robert Rich Garcia <consultations@dmerch.store>';
-    const adminEmail = 'digitalmerch4862@gmail.com';
+    const adminEmail = process.env.ADMIN_NOTIFICATION_EMAIL || 'garciarobertrich@gmail.com';
     let adminNotificationSent = false;
     let clientConfirmationSent = false;
 

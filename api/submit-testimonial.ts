@@ -53,9 +53,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const resend = new Resend(process.env.RESEND_API_KEY);
         await resend.emails.send({
           from: process.env.RESEND_FROM_EMAIL || 'Robert Rich Garcia <consultations@dmerch.store>',
-          to: process.env.ADMIN_NOTIFICATION_EMAIL || 'digitalmerch4862@gmail.com',
+          to: process.env.ADMIN_NOTIFICATION_EMAIL || 'garciarobertrich@gmail.com',
           subject: `Client survey received: ${invitation.client_name} (${score}/5)`,
-          html: `<h2>Client feedback received</h2><p><strong>${escapeHtml(invitation.client_name)}</strong> · ${escapeHtml(invitation.service_type)} · ${score}/5</p><ul><li>Communication: ${escapeHtml(answers.communication)}</li><li>Work quality: ${escapeHtml(answers.quality)}</li><li>Fit: ${escapeHtml(answers.fit)}</li><li>Result: ${escapeHtml(answers.result)}</li></ul><p>${type === 'video' ? 'Video testimonial attached to the admin record.' : 'Written survey response'}</p><p>${isPublic ? 'Client permitted publication and this 4–5 star response is live.' : 'Private feedback only (rating below 4 stars).'}</p><p><a href="https://rrdgarcia.vercel.app/admin">Open testimonial dashboard</a></p>`,
+          html: `<h2>Client feedback received</h2><p><strong>${escapeHtml(invitation.client_name)}</strong> · ${escapeHtml(invitation.service_type)} · ${score}/5</p><ul><li>Communication: ${escapeHtml(answers.communication)}</li><li>Work quality: ${escapeHtml(answers.quality)}</li><li>Fit: ${escapeHtml(answers.fit)}</li><li>Result: ${escapeHtml(answers.result)}</li></ul><p>${type === 'video' ? 'Video testimonial attached to the admin record.' : 'Written survey response'}</p><p>${isPublic ? 'Client permitted publication and this 4–5 star response is live.' : 'Private feedback only (rating below 4 stars).'}</p><p><a href="https://rrdgarcia.vercel.app/admin2">Open testimonial dashboard</a></p>`,
         });
       } catch (emailError) { console.error('Could not send survey notification:', emailError); }
     }

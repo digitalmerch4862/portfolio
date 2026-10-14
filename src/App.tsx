@@ -37,7 +37,7 @@ type PublicTestimonial = {
 
 function App() {
   const currentPath = window.location.pathname;
-  const [isAdminRoute, setIsAdminRoute] = useState(currentPath.startsWith('/admin'));
+  const [isAdminRoute, setIsAdminRoute] = useState(currentPath === '/admin2' || currentPath.startsWith('/admin2/'));
   const [isReviewRoute, setIsReviewRoute] = useState(currentPath.startsWith('/review'));
 
   const [isDark, setIsDark] = useState(true);
@@ -48,7 +48,7 @@ function App() {
   useEffect(() => {
     const handleLocationCheck = () => {
       const path = window.location.pathname;
-      setIsAdminRoute(path.startsWith('/admin'));
+      setIsAdminRoute(path === '/admin2' || path.startsWith('/admin2/'));
       setIsReviewRoute(path.startsWith('/review'));
     };
 
@@ -568,7 +568,7 @@ function App() {
       <footer className="py-8 bg-slate-950 dark:bg-cyber-dark text-slate-500 text-center border-t border-slate-800 dark:border-cyber-gray relative z-10 transition-colors duration-300">
         <div className="flex flex-col sm:flex-row items-center justify-between max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-xs gap-4">
           <p>© {new Date().getFullYear()} Robert Rich Garcia. All rights reserved.</p>
-          <a href="/admin" className="text-gray-600 hover:text-cyber-blue transition-colors font-mono">
+          <a href="/admin2" className="text-gray-600 hover:text-cyber-blue transition-colors font-mono">
             Admin Console →
           </a>
         </div>

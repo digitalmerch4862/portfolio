@@ -200,7 +200,7 @@ export const AdminDashboard: React.FC = () => {
     await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: window.location.origin + '/admin',
+        redirectTo: window.location.origin + '/admin2',
       },
     });
   };
@@ -444,11 +444,6 @@ export const AdminDashboard: React.FC = () => {
           <div className="w-16 h-16 rounded-2xl bg-cyber-blue/10 border border-cyber-blue/30 text-cyber-blue flex items-center justify-center mx-auto mb-6 shadow-[0_0_20px_rgba(0,242,255,0.2)]">
             <ShieldCheck size={32} />
           </div>
-
-          <h1 className="text-2xl font-bold tracking-tight text-white mb-2">Admin Portal</h1>
-          <p className="text-sm text-gray-400 mb-8">
-            Sign in with authorized Google account (<strong className="text-cyber-blue">{ALLOWED_ADMIN_EMAIL}</strong>) to manage CRM & Testimonials.
-          </p>
 
           <button
             onClick={handleGoogleSignIn}
