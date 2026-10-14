@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { 
-  ShieldCheck, 
   ShieldAlert, 
   LogOut, 
   ArrowLeft, 
@@ -441,10 +440,6 @@ export const AdminDashboard: React.FC = () => {
       <div className="min-h-screen bg-[#050505] text-white flex flex-col justify-center items-center p-4 relative font-sans">
         <div className="fixed inset-0 cyber-grid z-0 pointer-events-none opacity-40"></div>
         <div className="relative z-10 w-full max-w-md bg-[#0d0d0d] border border-cyber-gray p-8 rounded-3xl shadow-2xl text-center neon-border">
-          <div className="w-16 h-16 rounded-2xl bg-cyber-blue/10 border border-cyber-blue/30 text-cyber-blue flex items-center justify-center mx-auto mb-6 shadow-[0_0_20px_rgba(0,242,255,0.2)]">
-            <ShieldCheck size={32} />
-          </div>
-
           <button
             onClick={handleGoogleSignIn}
             className="w-full flex items-center justify-center gap-3 bg-white hover:bg-gray-100 text-slate-900 py-3.5 px-6 rounded-xl font-bold text-sm transition-all hover:scale-102 shadow-lg cursor-pointer"
