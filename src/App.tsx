@@ -13,7 +13,6 @@ import {
   Layers,
   Workflow,
   MessageSquare,
-  PhoneCall,
   CalendarCheck,
   Star,
 } from 'lucide-react';
@@ -450,15 +449,6 @@ function App() {
                     <a href="https://www.facebook.com/robert.rich.garcia/" target="_blank" rel="noopener noreferrer" className="p-2 rounded-lg bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/60 text-blue-600 dark:text-blue-400 hover:scale-110 transition-transform shadow-sm" title="Message me on Facebook">
                       <span className="font-extrabold text-base leading-none">f</span>
                     </a>
-                    <a href="viber://chat?number=%2B639175291018" className="p-2 rounded-lg bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800/60 text-purple-600 dark:text-purple-400 hover:scale-110 transition-transform shadow-sm" title="Viber Chat">
-                      <MessageSquare size={16} />
-                    </a>
-                    <a href="sms:+639175291018" className="p-2 rounded-lg bg-slate-100 dark:bg-cyber-dark border border-slate-200 dark:border-cyber-gray text-brand-600 dark:text-cyber-blue hover:scale-110 transition-transform shadow-sm" title="Send SMS">
-                      <MessageSquare size={16} />
-                    </a>
-                    <a href="tel:+639175291018" className="p-2 rounded-lg bg-slate-100 dark:bg-cyber-dark border border-slate-200 dark:border-cyber-gray text-slate-700 dark:text-gray-300 hover:scale-110 transition-transform shadow-sm" title="Instant Direct Call">
-                      <PhoneCall size={16} />
-                    </a>
                   </div>
                 </div>
               </div>
@@ -537,27 +527,6 @@ function App() {
               >
                 <span className="font-extrabold text-lg leading-none">f</span>
                 Message me on Facebook
-              </a>
-              <a
-                href="viber://chat?number=%2B639175291018"
-                className="inline-flex items-center gap-2 bg-purple-600/10 border border-purple-500/30 text-purple-400 px-5 py-2.5 rounded-full font-semibold text-sm hover:bg-purple-600 hover:text-white transition-all hover:scale-105 shadow-sm"
-              >
-                <MessageSquare size={18} />
-                Viber Chat
-              </a>
-              <a
-                href="sms:+639175291018"
-                className="inline-flex items-center gap-2 bg-slate-800 text-slate-200 border border-slate-700 px-5 py-2.5 rounded-full font-semibold text-sm hover:border-cyber-blue hover:text-cyber-blue transition-all hover:scale-105 shadow-sm"
-              >
-                <MessageSquare size={18} />
-                Send SMS
-              </a>
-              <a
-                href="tel:+639175291018"
-                className="inline-flex items-center gap-2 bg-slate-800 text-slate-200 border border-slate-700 px-5 py-2.5 rounded-full font-semibold text-sm hover:border-cyber-blue hover:text-cyber-blue transition-all hover:scale-105 shadow-sm"
-              >
-                <PhoneCall size={18} />
-                Direct Call
               </a>
             </div>
           </div>
