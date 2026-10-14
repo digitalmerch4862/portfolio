@@ -83,12 +83,10 @@ export const AdminDashboard: React.FC = () => {
   const [session, setSession] = useState<any>(null);
   const [loadingAuth, setLoadingAuth] = useState(true);
   const [loginEmail, setLoginEmail] = useState('');
-  const [loginPassword, setLoginPassword] = useState('');
+  const [loginOtp, setLoginOtp] = useState('');
   const [authMessage, setAuthMessage] = useState('');
   const [authBusy, setAuthBusy] = useState(false);
-  const [isPasswordReset, setIsPasswordReset] = useState(false);
-  const [isRecoverySession, setIsRecoverySession] = useState(false);
-  const [newPassword, setNewPassword] = useState('');
+  const [otpRequested, setOtpRequested] = useState(false);
   const [activeTab, setActiveTab] = useState<'bookings' | 'testimonials'>('bookings');
   
   // Bookings Data
@@ -130,9 +128,8 @@ export const AdminDashboard: React.FC = () => {
       setLoadingAuth(false);
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
-      if (event === 'PASSWORD_RECOVERY') setIsRecoverySession(true);
       setLoadingAuth(false);
     });
 
@@ -201,42 +198,38 @@ export const AdminDashboard: React.FC = () => {
     }
   }, [isAuthorized]);
 
-  // Password login and recovery.
-  const handlePasswordSignIn = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (!supabase) return;
+  // Email OTP login keeps recovery independent of redirect URLs.
+  const handleSendLoginOtp = async (event?: React.FormEvent<HTMLFormElement>) => {
+    event?.preventDefault();
+    if (!supabase || !loginEmail.trim()) return;
     setAuthBusy(true);
     setAuthMessage('');
-    const { error } = await supabase.auth.signInWithPassword({
+    const { error } = await supabase.auth.signInWithOtp({
       email: loginEmail.trim(),
-      password: loginPassword,
+      options: { shouldCreateUser: false },
+    });
+    setAuthBusy(false);
+    if (error) {
+      setAuthMessage(error.message);
+      return;
+    }
+    setOtpRequested(true);
+    setLoginOtp('');
+    setAuthMessage('If this address has an admin account, a sign-in code has been sent.');
+  };
+
+  const handleVerifyLoginOtp = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!supabase || !loginEmail.trim() || !loginOtp.trim()) return;
+    setAuthBusy(true);
+    setAuthMessage('');
+    const { error } = await supabase.auth.verifyOtp({
+      email: loginEmail.trim(),
+      token: loginOtp.trim(),
+      type: 'email',
     });
     setAuthBusy(false);
     if (error) setAuthMessage(error.message);
-  };
-
-  const handlePasswordReset = async () => {
-    if (!supabase || !loginEmail.trim()) {
-      setAuthMessage('Enter your email address first.');
-      return;
-    }
-    setAuthBusy(true);
-    setAuthMessage('');
-    const { error } = await supabase.auth.resetPasswordForEmail(loginEmail.trim(), {
-      redirectTo: `${window.location.origin}/admin2`,
-    });
-    setAuthBusy(false);
-    setAuthMessage(error ? error.message : 'If this email is registered, a password reset link has been sent.');
-  };
-
-  const handleSetNewPassword = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (!supabase) return;
-    setAuthBusy(true);
-    const { error } = await supabase.auth.updateUser({ password: newPassword });
-    setAuthBusy(false);
-    setAuthMessage(error ? error.message : 'Password updated. You are now signed in.');
-    if (!error) setIsRecoverySession(false);
   };
 
   const handleSignOut = async () => {
@@ -470,43 +463,26 @@ export const AdminDashboard: React.FC = () => {
   }
 
   // Not Signed In Screen
-  if (isRecoverySession) {
-    return (
-      <div className="min-h-screen bg-[#050505] text-white flex items-center justify-center p-4 font-sans">
-        <form onSubmit={handleSetNewPassword} className="w-full max-w-md space-y-4 rounded-3xl border border-cyber-gray bg-[#0d0d0d] p-8 neon-border">
-          <h1 className="text-xl font-semibold">Set your new password</h1>
-          <label className="block text-xs font-medium text-gray-300">New password
-            <input type="password" autoComplete="new-password" minLength={12} required value={newPassword} onChange={(event) => setNewPassword(event.target.value)} className="mt-1.5 w-full rounded-xl border border-cyber-gray bg-black px-4 py-3 text-sm text-white outline-none focus:border-cyber-blue" />
-          </label>
-          {authMessage && <p role="status" className="text-xs text-gray-300">{authMessage}</p>}
-          <button disabled={authBusy} className="w-full rounded-xl bg-cyber-blue px-5 py-3 font-bold text-sm text-black disabled:opacity-50">{authBusy ? 'Updating…' : 'Update password'}</button>
-        </form>
-      </div>
-    );
-  }
-
   if (!session) {
     return (
       <div className="min-h-screen bg-[#050505] text-white flex flex-col justify-center items-center p-4 relative font-sans">
         <div className="fixed inset-0 cyber-grid z-0 pointer-events-none opacity-40"></div>
         <div className="relative z-10 w-full max-w-md bg-[#0d0d0d] border border-cyber-gray p-8 rounded-3xl shadow-2xl text-center neon-border">
-          <h1 className="text-xl font-semibold text-white mb-6">{isPasswordReset ? 'Reset password' : 'Admin sign in'}</h1>
-          <form onSubmit={handlePasswordSignIn} className="space-y-4 text-left">
+          <h1 className="text-xl font-semibold text-white mb-6">Admin sign in</h1>
+          <form onSubmit={otpRequested ? handleVerifyLoginOtp : handleSendLoginOtp} className="space-y-4 text-left">
             <label className="block text-xs font-medium text-gray-300">Email
-              <input type="email" autoComplete="username" required value={loginEmail} onChange={(event) => setLoginEmail(event.target.value)} className="mt-1.5 w-full rounded-xl border border-cyber-gray bg-black px-4 py-3 text-sm text-white outline-none focus:border-cyber-blue" />
+              <input type="email" autoComplete="email" required readOnly={otpRequested} value={loginEmail} onChange={(event) => setLoginEmail(event.target.value)} className="mt-1.5 w-full rounded-xl border border-cyber-gray bg-black px-4 py-3 text-sm text-white outline-none focus:border-cyber-blue read-only:opacity-70" />
             </label>
-            {!isPasswordReset && <label className="block text-xs font-medium text-gray-300">Password
-              <input type="password" autoComplete="current-password" required value={loginPassword} onChange={(event) => setLoginPassword(event.target.value)} className="mt-1.5 w-full rounded-xl border border-cyber-gray bg-black px-4 py-3 text-sm text-white outline-none focus:border-cyber-blue" />
+            {otpRequested && <label className="block text-xs font-medium text-gray-300">Email code
+              <input type="text" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{6}" maxLength={6} required value={loginOtp} onChange={(event) => setLoginOtp(event.target.value.replace(/\D/g, '').slice(0, 6))} className="mt-1.5 w-full rounded-xl border border-cyber-gray bg-black px-4 py-3 text-center font-mono text-lg tracking-[0.35em] text-white outline-none focus:border-cyber-blue" />
             </label>}
             {authMessage && <p role="status" className="text-xs text-gray-300">{authMessage}</p>}
-            {isPasswordReset ? (
-              <button type="button" disabled={authBusy || !loginEmail.trim()} onClick={handlePasswordReset} className="w-full rounded-xl bg-cyber-blue px-5 py-3 font-bold text-sm text-black disabled:opacity-50">{authBusy ? 'Sending…' : 'Send password reset link'}</button>
-            ) : (
-              <button type="submit" disabled={authBusy} className="w-full rounded-xl bg-cyber-blue px-5 py-3 font-bold text-sm text-black disabled:opacity-50">{authBusy ? 'Signing in…' : 'Sign in'}</button>
-            )}
+            <button type="submit" disabled={authBusy} className="w-full rounded-xl bg-cyber-blue px-5 py-3 font-bold text-sm text-black disabled:opacity-50">
+              {authBusy ? (otpRequested ? 'Verifying…' : 'Sending code…') : (otpRequested ? 'Verify code' : 'Send sign-in code')}
+            </button>
           </form>
-          <button type="button" onClick={() => { setIsPasswordReset(!isPasswordReset); setAuthMessage(''); }} className="mt-4 text-xs text-gray-400 hover:text-cyber-blue">
-            {isPasswordReset ? 'Back to sign in' : 'Forgot password?'}
+          <button type="button" onClick={() => { setOtpRequested(false); setLoginOtp(''); setAuthMessage(''); }} className="mt-4 text-xs text-gray-400 hover:text-cyber-blue">
+            {otpRequested ? 'Use a different email' : 'Sign in with an emailed code'}
           </button>
 
           <div className="mt-8 pt-6 border-t border-cyber-gray/60">
