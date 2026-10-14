@@ -35,7 +35,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const safeService = escapeHtml(serviceType.trim());
     const html = `<div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;color:#172033;line-height:1.6"><h2>How was your experience?</h2><p>Hi ${safeName},</p><p>Thank you for working with me on ${safeService}. I’d appreciate your honest feedback in a short five-question survey. It covers overall satisfaction, communication, work quality, fit for your needs, and results for ${safeCompany}.</p><p>You can add an optional comment or video, and choose whether you want your feedback shared publicly. Ratings below 4 stars stay private.</p><p style="margin:28px 0"><a href="${reviewUrl}" style="background:#172033;color:#fff;padding:13px 20px;border-radius:8px;text-decoration:none">Start the feedback survey</a></p><p>It takes about two minutes. No account is needed.</p><p>Thank you,<br>Robert Rich Garcia<br><a href="${PORTFOLIO_URL}">Portfolio</a></p></div>`;
     const result = await resend.emails.send({
-      from: process.env.RESEND_FROM_EMAIL || 'Robert Rich Garcia <consultations@dmerch.store>',
+      from: process.env.RESEND_FROM_EMAIL || 'DMerch <consultations@dmerch.store>',
       to: clientEmail.trim(),
       subject: `Quick feedback about our ${serviceType.trim()} project`,
       html,
