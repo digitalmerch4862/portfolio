@@ -1,7 +1,17 @@
 import { createClient } from '@supabase/supabase-js';
 
 const DEFAULT_SUPABASE_URL = 'https://jfdvbyoyvqriqhqtmyjo.supabase.co';
+const DEFAULT_SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_SwyxDRF6_y_pBGtoBeKh7A_9RZX-Mv0';
 const ADMIN_EMAIL = 'garciarobertrich@gmail.com';
+
+export function createRequestClient(req) {
+  const url = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || DEFAULT_SUPABASE_URL;
+  const key = process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || DEFAULT_SUPABASE_PUBLISHABLE_KEY;
+  return createClient(url, key, {
+    global: { headers: { Authorization: req.headers.authorization || '' } },
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+}
 
 export function createAdminClient() {
   const url = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || DEFAULT_SUPABASE_URL;
@@ -15,7 +25,7 @@ export async function isPortfolioAdmin(req) {
   if (!authorization?.startsWith('Bearer ')) return false;
 
   try {
-    const supabase = createAdminClient();
+    const supabase = createRequestClient(req);
     const { data, error } = await supabase.auth.getUser(authorization.slice('Bearer '.length));
     return !error && data.user?.email?.toLowerCase() === ADMIN_EMAIL;
   } catch {
