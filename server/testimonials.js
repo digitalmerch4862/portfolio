@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 
 const DEFAULT_SUPABASE_URL = 'https://jfdvbyoyvqriqhqtmyjo.supabase.co';
-const ADMIN_EMAIL = 'digitalmerch4862@gmail.com';
+const ADMIN_EMAIL = 'garciarobertrich@gmail.com';
 
 export function createAdminClient() {
   const url = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || DEFAULT_SUPABASE_URL;

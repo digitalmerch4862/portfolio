@@ -35,7 +35,7 @@ import {
   UploadCloud
 } from 'lucide-react';
 
-const ALLOWED_ADMIN_EMAIL = 'digitalmerch4862@gmail.com';
+const ALLOWED_ADMIN_EMAIL = 'garciarobertrich@gmail.com';
 
 export interface BookingRecord {
   id: string;
