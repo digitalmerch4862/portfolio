@@ -445,9 +445,6 @@ export const AdminDashboard: React.FC = () => {
             <ShieldCheck size={32} />
           </div>
 
-          <h1 className="text-xl font-semibold tracking-tight text-white mb-1">Robert Garcia</h1>
-          <p className="text-xs uppercase tracking-[0.2em] text-cyber-blue mb-6">Profile Admin · /admin2</p>
-
           <button
             onClick={handleGoogleSignIn}
             className="w-full flex items-center justify-center gap-3 bg-white hover:bg-gray-100 text-slate-900 py-3.5 px-6 rounded-xl font-bold text-sm transition-all hover:scale-102 shadow-lg cursor-pointer"
