@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { Resend } from 'resend';
-import { createAdminClient, escapeHtml } from './_lib/testimonials';
+import { createAdminClient, escapeHtml } from '../server/testimonials';
 
 const TOKEN_PATTERN = /^[a-f0-9]{32}$/i;
 const mediaPathIsValid = (value: unknown, token: string, kind: 'avatar' | 'video') => {

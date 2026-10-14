@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { createAdminClient } from './_lib/testimonials';
+import { createAdminClient } from '../server/testimonials';
 
 const TOKEN_PATTERN = /^[a-f0-9]{32}$/i;
 

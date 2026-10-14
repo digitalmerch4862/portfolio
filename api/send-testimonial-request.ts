@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { Resend } from 'resend';
 import crypto from 'crypto';
-import { createAdminClient, escapeHtml, isPortfolioAdmin, PORTFOLIO_URL } from './_lib/testimonials';
+import { createAdminClient, escapeHtml, isPortfolioAdmin, PORTFOLIO_URL } from '../server/testimonials';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') return res.status(405).json({ success: false, error: 'Method not allowed.' });
