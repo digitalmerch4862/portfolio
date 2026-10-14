@@ -83,10 +83,9 @@ export const AdminDashboard: React.FC = () => {
   const [session, setSession] = useState<any>(null);
   const [loadingAuth, setLoadingAuth] = useState(true);
   const [loginEmail, setLoginEmail] = useState('');
-  const [loginOtp, setLoginOtp] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
   const [authMessage, setAuthMessage] = useState('');
   const [authBusy, setAuthBusy] = useState(false);
-  const [otpRequested, setOtpRequested] = useState(false);
   const [activeTab, setActiveTab] = useState<'bookings' | 'testimonials'>('bookings');
   
   // Bookings Data
@@ -198,35 +197,15 @@ export const AdminDashboard: React.FC = () => {
     }
   }, [isAuthorized]);
 
-  // Email OTP login keeps recovery independent of redirect URLs.
-  const handleSendLoginOtp = async (event?: React.FormEvent<HTMLFormElement>) => {
-    event?.preventDefault();
-    if (!supabase || !loginEmail.trim()) return;
-    setAuthBusy(true);
-    setAuthMessage('');
-    const { error } = await supabase.auth.signInWithOtp({
-      email: loginEmail.trim(),
-      options: { shouldCreateUser: false },
-    });
-    setAuthBusy(false);
-    if (error) {
-      setAuthMessage(error.message);
-      return;
-    }
-    setOtpRequested(true);
-    setLoginOtp('');
-    setAuthMessage('If this address has an admin account, a sign-in code has been sent.');
-  };
-
-  const handleVerifyLoginOtp = async (event: React.FormEvent<HTMLFormElement>) => {
+  // Password login for the existing admin account.
+  const handlePasswordSignIn = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!supabase || !loginEmail.trim() || !loginOtp.trim()) return;
+    if (!supabase) return;
     setAuthBusy(true);
     setAuthMessage('');
-    const { error } = await supabase.auth.verifyOtp({
+    const { error } = await supabase.auth.signInWithPassword({
       email: loginEmail.trim(),
-      token: loginOtp.trim(),
-      type: 'email',
+      password: loginPassword,
     });
     setAuthBusy(false);
     if (error) setAuthMessage(error.message);
@@ -469,21 +448,16 @@ export const AdminDashboard: React.FC = () => {
         <div className="fixed inset-0 cyber-grid z-0 pointer-events-none opacity-40"></div>
         <div className="relative z-10 w-full max-w-md bg-[#0d0d0d] border border-cyber-gray p-8 rounded-3xl shadow-2xl text-center neon-border">
           <h1 className="text-xl font-semibold text-white mb-6">Admin sign in</h1>
-          <form onSubmit={otpRequested ? handleVerifyLoginOtp : handleSendLoginOtp} className="space-y-4 text-left">
+          <form onSubmit={handlePasswordSignIn} className="space-y-4 text-left">
             <label className="block text-xs font-medium text-gray-300">Email
-              <input type="email" autoComplete="email" required readOnly={otpRequested} value={loginEmail} onChange={(event) => setLoginEmail(event.target.value)} className="mt-1.5 w-full rounded-xl border border-cyber-gray bg-black px-4 py-3 text-sm text-white outline-none focus:border-cyber-blue read-only:opacity-70" />
+              <input type="email" autoComplete="username" required value={loginEmail} onChange={(event) => setLoginEmail(event.target.value)} className="mt-1.5 w-full rounded-xl border border-cyber-gray bg-black px-4 py-3 text-sm text-white outline-none focus:border-cyber-blue" />
             </label>
-            {otpRequested && <label className="block text-xs font-medium text-gray-300">Email code
-              <input type="text" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{6}" maxLength={6} required value={loginOtp} onChange={(event) => setLoginOtp(event.target.value.replace(/\D/g, '').slice(0, 6))} className="mt-1.5 w-full rounded-xl border border-cyber-gray bg-black px-4 py-3 text-center font-mono text-lg tracking-[0.35em] text-white outline-none focus:border-cyber-blue" />
-            </label>}
+            <label className="block text-xs font-medium text-gray-300">Password
+              <input type="password" autoComplete="current-password" required value={loginPassword} onChange={(event) => setLoginPassword(event.target.value)} className="mt-1.5 w-full rounded-xl border border-cyber-gray bg-black px-4 py-3 text-sm text-white outline-none focus:border-cyber-blue" />
+            </label>
             {authMessage && <p role="status" className="text-xs text-gray-300">{authMessage}</p>}
-            <button type="submit" disabled={authBusy} className="w-full rounded-xl bg-cyber-blue px-5 py-3 font-bold text-sm text-black disabled:opacity-50">
-              {authBusy ? (otpRequested ? 'Verifying…' : 'Sending code…') : (otpRequested ? 'Verify code' : 'Send sign-in code')}
-            </button>
+            <button type="submit" disabled={authBusy} className="w-full rounded-xl bg-cyber-blue px-5 py-3 font-bold text-sm text-black disabled:opacity-50">{authBusy ? 'Signing in…' : 'Sign in'}</button>
           </form>
-          <button type="button" onClick={() => { setOtpRequested(false); setLoginOtp(''); setAuthMessage(''); }} className="mt-4 text-xs text-gray-400 hover:text-cyber-blue">
-            {otpRequested ? 'Use a different email' : 'Sign in with an emailed code'}
-          </button>
 
           <div className="mt-8 pt-6 border-t border-cyber-gray/60">
             <a href="/" className="inline-flex items-center gap-1.5 text-xs text-gray-400 hover:text-cyber-blue transition-colors">
